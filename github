@@ -11,7 +11,7 @@ class InvalidToken < StandardError; end
 class Github
   def initialize
     @base_uri = "https://api.github.com"
-    @cache_file = "repos.cache"
+    @cache_file = ".repositoriescache"
     @token_file = ".auth_token"
   end
 
