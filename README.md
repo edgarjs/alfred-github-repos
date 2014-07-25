@@ -1,5 +1,10 @@
 Quickly find your github repositories from [Alfred](http://www.alfredapp.com/).
 
+# Download from Packal
+
+<http://www.packal.org/workflow/github-repos>
+
+
 # Usage
 
 ### Identify yourself
@@ -29,6 +34,10 @@ And that's it, you'll see a list of matching repositories.
 To avoid hitting the github API every time you do a search, and to return results faster, the workflow caches all your repositories the first time you authenticate or do a search. If you create a new repository, you'll need to update your local cache with:
 
     gh-update
+
+# License
+
+This is released under the [MIT License](http://opensource.org/licenses/MIT).
 
 # Feedback
 
