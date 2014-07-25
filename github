@@ -1,0 +1,161 @@
+#!/usr/bin/env ruby
+
+require './xml_builder'
+
+require 'json'
+require 'net/http'
+require 'cgi'
+
+class InvalidToken < StandardError; end
+
+class Github
+  def initialize
+    @base_uri = "https://api.github.com"
+    @cache_file = "repos.cache"
+    @token_file = ".auth_token"
+  end
+
+  def store_token(token)
+    if token && token.length > 0
+      File.open(@token_file, 'w') do |f|
+        f.write(token)
+      end
+      rebuild_cache
+    end
+  end
+
+  def search_repo(query)
+    repos = load_or_initialize_cache
+    results = repos.select do |repo|
+      repo['name'] =~ Regexp.new(query, 'i')
+    end
+    results.length > 0 ? results : repos
+  end
+
+  def rebuild_cache
+    File.delete(@cache_file) if File.exists?(@cache_file)
+    cache_all_repos_for_user
+  end
+
+  def test_authentication
+    load_token
+    return false if !@token || @token.length == 0
+    res = get "/"
+    !res.has_key?('error')
+  end
+
+  private
+
+  def load_token
+    @token = File.read(@token_file).strip if File.exists?(@token_file)
+  end
+
+  def load_or_initialize_cache
+    if File.exists?(@cache_file)
+      JSON.parse(File.read(@cache_file))
+    else
+      cache_all_repos_for_user
+    end
+  end
+
+  # TODO: probably will do a search request instead of fetching all at once
+  def cache_all_repos_for_user
+    raise InvalidToken unless test_authentication
+    repos = []
+    repos += get_user_repos
+    get_user_orgs.each do |org|
+      repos += get_org_repos( org['login'] )
+    end
+    File.open(@cache_file, 'w') do |f|
+      f.write repos.to_json
+    end
+    repos
+  end
+
+  def get_user_repos
+    res = get "/user/repos"
+    if res.is_a?(Array)
+      res.map do |repo|
+        { 'name' => repo['full_name'], 'url' => repo['html_url'] }
+      end
+    else # TODO: handle error
+      []
+    end
+  end
+
+  def get_user_orgs
+    res = get "/user/orgs"
+    if res.is_a?(Array)
+      res.map do |org|
+        { 'login' => org['login'] }
+      end
+    else # TODO: handle error
+      []
+    end
+  end
+
+  def get_org_repos(org)
+    res = get "/orgs/#{org}/repos"
+    if res.is_a?(Array)
+      res.map do |repo|
+        { 'name' => repo['full_name'], 'url' => repo['html_url'] }
+      end
+    else # TODO: handle error
+      []
+    end
+  end
+
+  def get(path, params = {})
+    qs = ''
+    if params.any?
+      qs = '?' + params.map {|k, v| "#{CGI.escape k}=#{CGI.escape v}"}.join("&")
+    end
+    uri = URI("#{@base_uri}#{path}#{qs}")
+
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      req = Net::HTTP::Get.new(uri)
+      req['Accept'] = "application/vnd.github.v3+json"
+      req['Authorization'] = "token #{@token}"
+      http.request(req)
+    end
+
+    json = JSON.parse(res.body)
+
+    if res.kind_of? Net::HTTPSuccess
+      json
+    else
+      { 'error' => json['message'] }
+    end
+  end
+end
+
+query = ARGV[0]
+github = Github.new
+
+begin
+  if query == '--update'
+    github.rebuild_cache
+  elsif query == '--auth'
+    github.store_token(ARGV[1])
+  else
+    results = github.search_repo(query || '')
+
+    output = XmlBuilder.build do |xml|
+      xml.items do
+        results.each do |repo|
+          xml.item Item.new(repo['url'], repo['url'], repo['name'], repo['url'], 'yes')
+        end
+      end
+    end
+
+    puts output
+  end
+rescue InvalidToken
+  output = XmlBuilder.build do |xml|
+    xml.items do
+      xml.item Item.new('gh-error', '', "Invalid token!", "Please set your token with gh-auth", 'no')
+    end
+  end
+
+  puts output
+end
