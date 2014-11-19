@@ -19,6 +19,17 @@
 				<string></string>
 			</dict>
 		</array>
+		<key>40B56441-0438-429E-82CE-5942262BCA05</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>8CB21C29-3AF6-4E12-A2C8-E8670FE56AA8</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+			</dict>
+		</array>
 		<key>549B4661-C716-45E3-97F9-F69D72A70B6D</key>
 		<array>
 			<dict>
@@ -45,7 +56,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>EB3BD698-90BE-4C21-BF33-EFE6154B54CD</string>
+				<string>AAF6AA90-74F5-448C-A942-5C9FAF3F1B95</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -106,65 +117,31 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>lastpathcomponent</key>
-				<false/>
-				<key>onlyshowifquerypopulated</key>
-				<false/>
-				<key>output</key>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>qry="{query}"
+
+case "$qry" in
+  https://*) # repo selected, open in browser
+	open "$qry"
+	;;
+  gh-auth*) # switch to gh-auth
+	osascript -e 'tell Application "Alfred 2" to search "'"$qry"'"'
+	;;
+  *) # rebuild cache, then repeat search
+	ruby github --update &amp;&amp;
+    osascript -e 'tell application "Alfred 2" to run trigger "report-update-complete" in workflow "sh.edgar.alfred.GithubRepos"' &amp;&amp;
+	osascript -e 'tell Application "Alfred 2" to search "gh '"$qry"'"'
+	;;
+esac</string>
+				<key>type</key>
 				<integer>0</integer>
-				<key>removeextension</key>
-				<false/>
-				<key>sticky</key>
-				<false/>
-				<key>text</key>
-				<string>Local cache has been rebuilt</string>
-				<key>title</key>
-				<string>Fetch complete!</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.output.notification</string>
+			<string>alfred.workflow.action.script</string>
 			<key>uid</key>
-			<string>8CB21C29-3AF6-4E12-A2C8-E8670FE56AA8</string>
-			<key>version</key>
-			<integer>0</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>plusspaces</key>
-				<false/>
-				<key>url</key>
-				<string>{query}</string>
-				<key>utf8</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.openurl</string>
-			<key>uid</key>
-			<string>EB3BD698-90BE-4C21-BF33-EFE6154B54CD</string>
-			<key>version</key>
-			<integer>0</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>lastpathcomponent</key>
-				<false/>
-				<key>onlyshowifquerypopulated</key>
-				<false/>
-				<key>output</key>
-				<integer>0</integer>
-				<key>removeextension</key>
-				<false/>
-				<key>sticky</key>
-				<false/>
-				<key>title</key>
-				<string>Token saved!</string>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.output.notification</string>
-			<key>uid</key>
-			<string>2DA5013F-ECBE-47B0-B940-9A997CB227BB</string>
+			<string>AAF6AA90-74F5-448C-A942-5C9FAF3F1B95</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -176,9 +153,9 @@
 				<key>keyword</key>
 				<string>gh-update</string>
 				<key>subtext</key>
-				<string>Rebuilds your local cache from github</string>
+				<string>Rebuilds your local cache from GitHub</string>
 				<key>text</key>
-				<string>Rebuild local cache of respositories</string>
+				<string>Update local cache of repositories</string>
 				<key>withspace</key>
 				<false/>
 			</dict>
@@ -209,10 +186,78 @@
 		<dict>
 			<key>config</key>
 			<dict>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>output</key>
+				<integer>0</integer>
+				<key>removeextension</key>
+				<false/>
+				<key>sticky</key>
+				<false/>
+				<key>text</key>
+				<string>Local cache has been rebuilt</string>
+				<key>title</key>
+				<string>Update complete!</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>8CB21C29-3AF6-4E12-A2C8-E8670FE56AA8</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>triggerid</key>
+				<string>report-update-complete</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.external</string>
+			<key>uid</key>
+			<string>40B56441-0438-429E-82CE-5942262BCA05</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>keyword</key>
+				<string>gh-auth</string>
+				<key>subtext</key>
+				<string>Just ↩ to go to https://github.com/settings/tokens/new now to create a token with scope 'repo'.</string>
+				<key>text</key>
+				<string>gh-auth TOKEN</string>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>9C8AF5E1-FB99-44C2-9FFD-5DFC67366C10</string>
+			<key>version</key>
+			<integer>0</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
 				<key>escaping</key>
-				<integer>127</integer>
+				<integer>102</integer>
 				<key>script</key>
-				<string>ruby github --auth {query}</string>
+				<string>qry="{query}"
+qry="${qry// /}"
+
+if [[ -z $qry ]]; then
+	open https://github.com/settings/tokens/new
+else
+	ruby github --auth "$qry" &gt;/dev/null
+	echo "Token saved!"
+fi
+</string>
 				<key>type</key>
 				<integer>0</integer>
 			</dict>
@@ -226,21 +271,23 @@
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>argumenttype</key>
+				<key>lastpathcomponent</key>
+				<false/>
+				<key>onlyshowifquerypopulated</key>
+				<false/>
+				<key>output</key>
 				<integer>0</integer>
-				<key>keyword</key>
-				<string>gh-auth</string>
-				<key>subtext</key>
-				<string>Go to https://github.com/settings/tokens/new to get a new token</string>
-				<key>text</key>
-				<string>gh-auth TOKEN</string>
-				<key>withspace</key>
-				<true/>
+				<key>removeextension</key>
+				<false/>
+				<key>sticky</key>
+				<false/>
+				<key>title</key>
+				<string>{query}</string>
 			</dict>
 			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
+			<string>alfred.workflow.output.notification</string>
 			<key>uid</key>
-			<string>9C8AF5E1-FB99-44C2-9FFD-5DFC67366C10</string>
+			<string>2DA5013F-ECBE-47B0-B940-9A997CB227BB</string>
 			<key>version</key>
 			<integer>0</integer>
 		</dict>
@@ -252,12 +299,17 @@
 		<key>0181D01E-433D-4461-B212-F01CBDA53091</key>
 		<dict>
 			<key>ypos</key>
-			<real>250</real>
+			<real>280</real>
 		</dict>
 		<key>2DA5013F-ECBE-47B0-B940-9A997CB227BB</key>
 		<dict>
 			<key>ypos</key>
-			<real>130</real>
+			<real>280</real>
+		</dict>
+		<key>40B56441-0438-429E-82CE-5942262BCA05</key>
+		<dict>
+			<key>ypos</key>
+			<real>190</real>
 		</dict>
 		<key>549B4661-C716-45E3-97F9-F69D72A70B6D</key>
 		<dict>
@@ -267,14 +319,14 @@
 		<key>8CB21C29-3AF6-4E12-A2C8-E8670FE56AA8</key>
 		<dict>
 			<key>ypos</key>
-			<real>10</real>
+			<real>130</real>
 		</dict>
 		<key>9C8AF5E1-FB99-44C2-9FFD-5DFC67366C10</key>
 		<dict>
 			<key>ypos</key>
-			<real>250</real>
+			<real>280</real>
 		</dict>
-		<key>EB3BD698-90BE-4C21-BF33-EFE6154B54CD</key>
+		<key>AAF6AA90-74F5-448C-A942-5C9FAF3F1B95</key>
 		<dict>
 			<key>ypos</key>
 			<real>10</real>
