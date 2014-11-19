@@ -29,7 +29,7 @@ class Github
     results = repos.select do |repo|
       repo['name'] =~ Regexp.new(query, 'i')
     end
-    results.length > 0 ? results : repos
+    results
   end
 
   def rebuild_cache
@@ -142,8 +142,12 @@ begin
 
     output = XmlBuilder.build do |xml|
       xml.items do
-        results.each do |repo|
-          xml.item Item.new(repo['url'], repo['url'], repo['name'], repo['url'], 'yes')
+        if results.length > 0
+          results.each do |repo|
+            xml.item Item.new(repo['url'], repo['url'], repo['name'], repo['url'], 'yes')
+          end
+        else
+          xml.item Item.new(nil, query, 'Update the repository cache and try again.', 'Rebuilds your local cache from GitHub, then searches again; gh-update to rebuild anytime.', 'yes', 'FE3390F7-206C-45C4-94BB-5DD14DE23A1B.png')
         end
       end
     end
@@ -153,7 +157,7 @@ begin
 rescue InvalidToken
   output = XmlBuilder.build do |xml|
     xml.items do
-      xml.item Item.new('gh-error', '', "Invalid token!", "Please set your token with gh-auth", 'no')
+      xml.item Item.new('gh-error', 'gh-auth ', "Missing or invalid token!", "Please set your token with gh-auth. ↩ to go there now.", 'yes')
     end
   end
 
