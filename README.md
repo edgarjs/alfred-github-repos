@@ -9,11 +9,11 @@ Quickly find your github repositories from [Alfred](http://www.alfredapp.com/).
 
 ### Identify yourself
 
-This workflow search within your public and private repositories (including organizations you belong to). So you need to provide an access token to make things easy.
+This workflow searches on github and within your public and private repositories (including organizations you belong to). So you need to provide an access token to make things easy.
 
-So go to [create a new personal access token](https://github.com/settings/tokens/new). You can enter any description and it just need to be checked the `repo` option (read private repositories).
+To generate an access token, go to [create a new personal access token](https://github.com/settings/tokens/new). You can enter any description and it just need to be checked the `repo` and `public_repo` option (read private and public repositories).
 
-![New personal access token](http://cloud.edgar.sh/2z7pq.png)
+![Howto create access token](help_create-accesstoken.png)
 
 Then **copy the token** (as it will be visible only that time!). And authenticate in alfred:
 
@@ -21,19 +21,31 @@ Then **copy the token** (as it will be visible only that time!). And authenticat
 
 This will store your token and you will be able to use the following commands...
 
-### Search your repositories
+### List and search repositories
 
-To search your repos, just type in alfred:
+List all of your own repositories
+    
+    gh
 
-    gh YOUR-REPO-NAME
+Filter your own repositories and search all repositories on github by *keyword*
 
-And that's it, you'll see a list of matching repositories.
+    gh keyword
+
+List all repositories of a specific github user
+
+    gh user/
+
+Filter repositories of a specific github user by *keyword*
+
+    gh user/keyword
 
 ### Rebuild local cache
 
 To avoid hitting the github API every time you do a search, and to return results faster, the workflow caches all your repositories the first time you authenticate or do a search. If you create a new repository, you'll need to update your local cache with:
 
     gh-update
+
+Note: the local cache will only be used for your own repositories. Once you provide a keyword, the workflow will search on github using the github API. Response times may be slower in this case.
 
 # License
 
