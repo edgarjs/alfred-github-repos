@@ -29,6 +29,7 @@ class Github
     results = repos.select do |repo|
       repo['name'] =~ Regexp.new(query, 'i')
     end
+    results+= search_all_repos(query)
     results.length > 0 ? results : repos
   end
 
@@ -103,6 +104,40 @@ class Github
     else # TODO: handle error
       []
     end
+  end
+
+  def search_all_repos(query)
+    return [] if !query || query.length == 0    
+    raise InvalidToken unless test_authentication
+
+    parts = query.split('/', 2)
+
+    if parts.length == 1 and parts[0].length > 0
+      res = get "/search/repositories", { "q" => query }
+      if res.is_a?(Hash) and res.has_key?('items')
+        res['items'].map do |repo|
+          { 'name' => repo['full_name'], 'url' => repo['html_url'] }
+        end
+      else # TODO: handle error
+        []
+      end
+    elsif parts.length == 2 and parts[0].length > 0
+      user = parts[0]
+      userQuery = parts[1]
+      res = get "/users/#{user}/repos"
+      if res.is_a?(Array)
+        repos = res.select do |repo|
+          repo['name'] =~ Regexp.new(userQuery, 'i')
+        end
+        repos.map do |repo|
+          { 'name' => repo['full_name'], 'url' => repo['html_url'] }
+        end
+      else # TODO: handle error
+        []
+      end
+    else
+      []
+    end    
   end
 
   def get(path, params = {})
