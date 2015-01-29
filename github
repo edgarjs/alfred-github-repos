@@ -20,19 +20,19 @@ class Github
       File.open(@token_file, 'w') do |f|
         f.write(token)
       end
-      rebuild_cache
+      rebuild_user_repos_cache
     end
   end
 
   def search_repo(query)
-    repos = load_or_initialize_cache
+    repos = load_and_cache_user_repos
     results = repos.select do |repo|
       repo['name'] =~ Regexp.new(query, 'i')
     end
     results.length > 0 ? results : repos
   end
 
-  def rebuild_cache
+  def rebuild_user_repos_cache
     File.delete(@cache_file) if File.exists?(@cache_file)
     cache_all_repos_for_user
   end
@@ -50,7 +50,7 @@ class Github
     @token = File.read(@token_file).strip if File.exists?(@token_file)
   end
 
-  def load_or_initialize_cache
+  def load_and_cache_user_repos
     if File.exists?(@cache_file)
       JSON.parse(File.read(@cache_file))
     else
@@ -134,7 +134,7 @@ github = Github.new
 
 begin
   if query == '--update'
-    github.rebuild_cache
+    github.rebuild_user_repos_cache
   elsif query == '--auth'
     github.store_token(ARGV[1])
   else
