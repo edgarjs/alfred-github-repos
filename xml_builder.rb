@@ -1,10 +1,10 @@
-class Item < Struct.new(:uid, :arg, :title, :subtitle, :valid); end
+class Item < Struct.new(:uid, :arg, :title, :subtitle, :valid, :icon); end
 
 class XmlBuilder
   attr_reader :output
 
   def initialize
-    @output = '<?xml version="1.0"?>'
+    @output = '<?xml version="1.0"?>'"\n"
   end
 
   def self.build(&block)
@@ -14,7 +14,7 @@ class XmlBuilder
   end
 
   def items(&block)
-    @output << '<items>'
+    @output << '<items>'"\n"
     yield(self)
     @output << '</items>'
   end
@@ -24,7 +24,7 @@ class XmlBuilder
       <item uid="#{item.uid}" arg="#{item.arg}" valid="#{item.valid}">
         <title>#{item.title}</title>
         <subtitle>#{item.subtitle}</subtitle>
-        <icon>icon.png</icon>
+        <icon>#{item.icon}</icon>
       </item>
     eos
   end

@@ -29,7 +29,7 @@ class Github
     results = repos.select do |repo|
       repo['name'] =~ Regexp.new(query, 'i')
     end
-    results.length > 0 ? results : repos
+    results
   end
 
   def rebuild_cache
@@ -106,24 +106,41 @@ class Github
   end
 
   def get(path, params = {})
-    params['per_page'] = '9999'
-    qs = '?' + params.map {|k, v| "#{CGI.escape k}=#{CGI.escape v}"}.join("&")
-    uri = URI("#{@base_uri}#{path}#{qs}")
+    params['per_page'] = 100  # Note: 100 is the max. - see https://developer.github.com/v3/#pagination
+    qs = params.map {|k, v| "#{CGI.escape k.to_s}=#{CGI.escape v.to_s}"}.join("&")
+    uri = URI("#{@base_uri}#{path}?#{qs}")
 
-    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      req = Net::HTTP::Get.new(uri)
-      req['Accept'] = "application/vnd.github.v3+json"
-      req['Authorization'] = "token #{@token}"
-      http.request(req)
-    end
+    json_all = []
 
-    json = JSON.parse(res.body)
+    begin
 
-    if res.kind_of? Net::HTTPSuccess
-      json
-    else
-      { 'error' => json['message'] }
-    end
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        req = Net::HTTP::Get.new(uri)
+        req['Accept'] = "application/vnd.github.v3+json"
+        req['Authorization'] = "token #{@token}"
+        http.request(req)
+      end
+
+      json = JSON.parse(res.body)
+
+      if not res.kind_of? Net::HTTPSuccess
+        return { 'error' => json['message'] }
+      end
+
+      if json.is_a?(Array) # result is paged
+        json_all.concat json
+        # See if more pages must be retrieved by testing for and extracting the link header's "next" URL.
+        # See https://developer.github.com/guides/traversing-with-pagination/
+        uri = URI((res['link'].match /<([^>]+)>;\s*rel="next"/)[1]) rescue nil
+        break if uri.nil?
+      else  # result is not an array and therefore not paged
+        json_all = json
+        break
+      end
+
+    end while true
+
+    json_all
   end
 end
 
@@ -140,8 +157,12 @@ begin
 
     output = XmlBuilder.build do |xml|
       xml.items do
-        results.each do |repo|
-          xml.item Item.new(repo['url'], repo['url'], repo['name'], repo['url'], 'yes')
+        if results.length > 0
+          results.each do |repo|
+            xml.item Item.new(repo['url'], repo['url'], repo['name'], repo['url'], 'yes')
+          end
+        else
+          xml.item Item.new(nil, query, 'Update the repository cache and try again.', 'Rebuilds your local cache from GitHub, then searches again; gh-update to rebuild anytime.', 'yes', 'FE3390F7-206C-45C4-94BB-5DD14DE23A1B.png')
         end
       end
     end
@@ -151,7 +172,7 @@ begin
 rescue InvalidToken
   output = XmlBuilder.build do |xml|
     xml.items do
-      xml.item Item.new('gh-error', '', "Invalid token!", "Please set your token with gh-auth", 'no')
+      xml.item Item.new('gh-error', 'gh-auth ', "Missing or invalid token!", "Please set your token with gh-auth. ↩ to go there now.", 'yes')
     end
   end
 
