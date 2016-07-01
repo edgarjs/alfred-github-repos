@@ -11,11 +11,11 @@ This workflow searches among your public and private repositories (including org
 
 ### Identify yourself
 
-As one-time setup, you need to provide a GitHub API access token to authenticate:
+This workflow searches on github and within your public and private repositories (including organizations you belong to). So you need to provide an access token to make things easy.
 
-[Create a new personal access token](https://github.com/settings/tokens/new). You can enter any description; scope `repo` (read private repositories) is sufficient.
+To generate an access token, go to [create a new personal access token](https://github.com/settings/tokens/new). You can enter any description and it just need to be checked the `repo` and `public_repo` option (read private and public repositories).
 
-![New personal access token](http://cloud.edgar.sh/2z7pq.png)
+![Howto create access token](help_create-accesstoken.png)
 
 Then **copy the token** (as it will be visible only that time!), and authenticate in Alfred:
 
@@ -23,14 +23,23 @@ Then **copy the token** (as it will be visible only that time!), and authenticat
 
 This will store your token and you will be able to use the following commands:
 
-### Search your repositories
+### List and search repositories
 
-To search your repos, just type in Alfred:
+List all of your own repositories
 
-    gh YOUR-REPO-NAME
+    gh
 
-You'll see a list of matching repositories.  
-Actioning a match will open the repository on GitHub.
+Filter your own repositories and search all repositories on github by *keyword*
+
+    gh keyword
+
+List all repositories of a specific github user
+
+    gh user/
+
+Filter repositories of a specific github user by *keyword*
+
+    gh user/keyword
 
 ### Update local cache
 
@@ -38,7 +47,7 @@ To avoid hitting the GitHub API every time you do a search, and to return result
 
     gh-update
 
-You'll also be offered to update the cache (and repeat the search) if a search returns no results.
+Note: the local cache will only be used for your own repositories. Once you provide a keyword, the workflow will search on github using the github API. Response times may be slower in this case.
 
 # License
 
