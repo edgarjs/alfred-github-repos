@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require './xml_builder'
+require './link_header'
 
 require 'json'
 require 'net/http'
@@ -96,7 +97,7 @@ class Github
   end
 
   def get_org_repos(org)
-    res = get "/orgs/#{org}/repos"
+    res = get_multipage_arr "/orgs/#{org}/repos"
     if res.is_a?(Array)
       res.map do |repo|
         { 'name' => repo['full_name'], 'url' => repo['html_url'] }
@@ -104,6 +105,30 @@ class Github
     else # TODO: handle error
       []
     end
+  end
+  
+  def get_multipage_arr(path,params = {})
+    qs = ''
+    if params.any?
+      qs = '?' + params.map {|k, v| "#{CGI.escape k}=#{CGI.escape v}"}.join("&")
+    end
+    resp_objects_arr = []
+    uri = URI("#{@base_uri}#{path}#{qs}")
+    begin
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        req = Net::HTTP::Get.new(uri)
+        req['Accept'] = "application/vnd.github.v3+json"
+        req['Authorization'] = "token #{@token}"
+        http.request(req)
+      end
+      json = JSON.parse(res.body)
+      if res.kind_of? Net::HTTPSuccess
+        json.each {|obj| resp_objects_arr << obj}
+      else
+        return { 'error' => json['message'] }
+      end
+    end while uri = (URI(LinkHeader.parse(res['link']).find_link(["rel","next"]).href) rescue nil)
+    resp_objects_arr
   end
 
   def search_all_repos(query)
