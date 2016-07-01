@@ -106,10 +106,8 @@ class Github
   end
 
   def get(path, params = {})
-    qs = ''
-    if params.any?
-      qs = '?' + params.map {|k, v| "#{CGI.escape k}=#{CGI.escape v}"}.join("&")
-    end
+    params['per_page'] = '9999'
+    qs = '?' + params.map {|k, v| "#{CGI.escape k}=#{CGI.escape v}"}.join("&")
     uri = URI("#{@base_uri}#{path}#{qs}")
 
     res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
