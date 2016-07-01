@@ -20,19 +20,20 @@ class Github
       File.open(@token_file, 'w') do |f|
         f.write(token)
       end
-      rebuild_cache
+      rebuild_user_repos_cache
     end
   end
 
   def search_repo(query)
-    repos = load_or_initialize_cache
+    repos = load_and_cache_user_repos
     results = repos.select do |repo|
       repo['name'] =~ Regexp.new(query, 'i')
     end
+    results += search_all_repos(query)
     results
   end
 
-  def rebuild_cache
+  def rebuild_user_repos_cache
     File.delete(@cache_file) if File.exists?(@cache_file)
     cache_all_repos_for_user
   end
@@ -50,7 +51,7 @@ class Github
     @token = File.read(@token_file).strip if File.exists?(@token_file)
   end
 
-  def load_or_initialize_cache
+  def load_and_cache_user_repos
     if File.exists?(@cache_file)
       JSON.parse(File.read(@cache_file))
     else
@@ -105,6 +106,40 @@ class Github
     end
   end
 
+  def search_all_repos(query)
+    return [] if !query || query.length == 0
+    raise InvalidToken unless test_authentication
+
+    parts = query.split('/', 2)
+
+    if parts.length == 1 and parts[0].length > 0
+      res = get "/search/repositories", { "q" => query }
+      if res.is_a?(Hash) and res.has_key?('items')
+        res['items'].map do |repo|
+          { 'name' => repo['full_name'], 'url' => repo['html_url'] }
+        end
+      else # TODO: handle error
+        []
+      end
+    elsif parts.length == 2 and parts[0].length > 0
+      user = parts[0]
+      userQuery = parts[1]
+      res = get "/users/#{user}/repos"
+      if res.is_a?(Array)
+        repos = res.select do |repo|
+          repo['name'] =~ Regexp.new(userQuery, 'i')
+        end
+        repos.map do |repo|
+          { 'name' => repo['full_name'], 'url' => repo['html_url'] }
+        end
+      else # TODO: handle error
+        []
+      end
+    else
+      []
+    end
+  end
+
   def get(path, params = {})
     params['per_page'] = 100  # Note: 100 is the max. - see https://developer.github.com/v3/#pagination
     qs = params.map {|k, v| "#{CGI.escape k.to_s}=#{CGI.escape v.to_s}"}.join("&")
@@ -149,7 +184,7 @@ github = Github.new
 
 begin
   if query == '--update'
-    github.rebuild_cache
+    github.rebuild_user_repos_cache
   elsif query == '--auth'
     github.store_token(ARGV[1])
   else
