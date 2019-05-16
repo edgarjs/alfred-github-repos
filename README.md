@@ -1,3 +1,13 @@
+## Install
+
+Download from [packal](http://www.packal.org/workflow/github-repos-0) to keep it up to date.
+
+You can also check the [releases history](https://github.com/edgarjs/alfred-github-repos/releases).
+
+---
+
+## Actions
+
 1. Call `gh-token` to generate personal access token.
 2. Login by calling the `gh-login <email> <token>` action.
 3. Search any repository by calling the `gh <term>` action.
