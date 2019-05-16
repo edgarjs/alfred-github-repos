@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+rm -f github-repos.alfredworkflow
+zip github-repos.alfredworkflow -r bin lib info.plist icon.png

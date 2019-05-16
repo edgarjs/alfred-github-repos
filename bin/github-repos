@@ -1,0 +1,91 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+require_relative '../lib/github_repos'
+require 'github/repo_formatter'
+require 'github/authorization'
+require 'json'
+
+action = ARGV[0]
+
+def usage!
+  puts 'Usage: github-repos <command>'
+  puts
+  puts 'Commands:'
+  puts '  authenticate <email> <token>'
+  puts '  search <query>'
+  puts '  host <hostname>'
+  exit
+end
+
+return usage! unless action
+
+def authenticate(email, token)
+  return puts(not_authenticated_output) unless email && token
+
+  Github::Authorization.store_credentials(email, token)
+end
+
+def configure_host(host)
+  return usage! unless host
+
+  Github::Api.configure_host(host)
+end
+
+def not_authenticated_output
+  items = [
+    {
+      title: 'You need to authenticate with Github first',
+      subtitle: 'Hit Enter to open authentication page',
+      arg: Github::Authorization::AUTHORIZATION_URL
+    }
+  ]
+
+  JSON.generate(items: items)
+end
+
+def no_results_output
+  items = [
+    {
+      title: 'No results',
+      subtitle: 'Try searching for another term'
+    }
+  ]
+
+  JSON.generate(items: items)
+end
+
+def error_output
+  items = [
+    {
+      title: 'Invalid response',
+      subtitle: 'Please check your host and auth configuration'
+    }
+  ]
+
+  JSON.generate(items: items)
+end
+
+def search(query)
+  repos = Github::Api.new.search_repos(query)
+  return not_authenticated_output unless repos
+  return no_results_output if repos.empty?
+
+  Github::RepoFormatter.new(repos).to_json
+rescue Github::Authorization::NotAuthorizedError
+  not_authenticated_output
+rescue JSON::ParserError
+  error_output
+end
+
+case action
+when 'host'
+  configure_host(ARGV[1])
+when 'authenticate'
+  authenticate(ARGV[1], ARGV[2])
+when 'search'
+  puts search(ARGV[1])
+else
+  return usage!
+end
