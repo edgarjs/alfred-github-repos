@@ -9,7 +9,9 @@ require 'local_storage'
 
 module Github
   class Api
-    HOST_FILE = '~/.github-repos/host'.freeze
+    LEGACY_HOST_FILE = '~/.github-repos/host'.freeze
+    DEFAULT_HOST = 'https://api.github.com'.freeze
+    HOST_FILE_NAME = "host".freeze
 
     def search_repos(query)
       path = "/search/repositories?q=#{escape(query)}"
@@ -18,15 +20,20 @@ module Github
     end
 
     class << self
+      def host_storage
+        host_path = ConfigPath.new(HOST_FILE_NAME, LEGACY_HOST_FILE).get
+        LocalStorage.new(host_path)
+      end
+
       def configure_host(host)
-        LocalStorage.new(HOST_FILE).put("#{host}/api/v3")
+        host_storage.put("#{host}/api/v3")
       end
     end
 
     private
 
     def host
-      @host ||= (LocalStorage.new(HOST_FILE).get || 'https://api.github.com')
+      @host ||= (Api.host_storage.get || DEFAULT_HOST)
     end
 
     def escape(str)

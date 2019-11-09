@@ -6,6 +6,7 @@ require 'fileutils'
 class LocalStorage
   attr_reader :location
 
+  # @param [String] filepath
   def initialize(filepath)
     @location = File.expand_path(filepath)
     create_parent_dir
