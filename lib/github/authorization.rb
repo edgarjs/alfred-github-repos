@@ -8,7 +8,7 @@ module Github
 
     AUTHORIZATION_URL = 'https://github.com/settings/tokens/new?description=Github%20Repos&scopes=repo'.freeze
     LEGACY_CREDENTIALS = '~/.github-repos/config'.freeze
-    CREDENTIALS_FILE_NAME = "config".freeze
+    CREDENTIALS_FILE_NAME = 'config'.freeze
 
     attr_reader :username, :token
 

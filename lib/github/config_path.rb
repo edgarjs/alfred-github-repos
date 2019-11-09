@@ -1,6 +1,6 @@
 module Github
   class ConfigPath
-    APP_NAME = "github-repos"
+    APP_NAME = 'github-repos'
 
     # @param [String] target
     # @param [String] legacy_path

@@ -11,7 +11,7 @@ module Github
   class Api
     LEGACY_HOST_FILE = '~/.github-repos/host'.freeze
     DEFAULT_HOST = 'https://api.github.com'.freeze
-    HOST_FILE_NAME = "host".freeze
+    HOST_FILE_NAME = 'host'.freeze
 
     def search_repos(query)
       path = "/search/repositories?q=#{escape(query)}"
