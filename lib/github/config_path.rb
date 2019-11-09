@@ -10,7 +10,7 @@ module Github
     end
 
     def get
-      if @legacy_file
+      unless @legacy_file.nil?
         # Fallback to legacy behavior if legacy path exists
         legacy_file = File.expand_path(@legacy_file)
         return legacy_file if File.file?(legacy_file)
