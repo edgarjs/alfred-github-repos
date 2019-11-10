@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'local_storage'
+require 'config_path'
 
 module Github
   class Authorization

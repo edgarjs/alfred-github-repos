@@ -6,6 +6,7 @@ require 'uri'
 require 'cgi'
 require 'github/authorization'
 require 'local_storage'
+require 'config_path'
 
 module Github
   class Api
