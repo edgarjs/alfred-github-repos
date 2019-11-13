@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
 require 'local_storage'
+require 'config_path'
 
 module Github
   class Authorization
     class NotAuthorizedError < StandardError; end
 
     AUTHORIZATION_URL = 'https://github.com/settings/tokens/new?description=Github%20Repos&scopes=repo'.freeze
-    CREDENTIALS = '~/.github-repos/config'.freeze
+    LEGACY_CREDENTIALS = '~/.github-repos/config'.freeze
+    CREDENTIALS_FILE_NAME = 'config'.freeze
 
     attr_reader :username, :token
 
@@ -37,7 +39,8 @@ module Github
       private
 
       def credentials
-        LocalStorage.new(CREDENTIALS)
+        config_path = ConfigPath.new(CREDENTIALS_FILE_NAME, LEGACY_CREDENTIALS).get
+        LocalStorage.new(config_path)
       end
     end
   end
