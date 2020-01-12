@@ -112,6 +112,8 @@ module Github
     end
 
     def get_next_page(header)
+      return unless header
+
       # GitHub pagination returns a "Link" header in the following format:
       # <https://api.github.com/user/repos?per_page=100&page=2>; rel="last",
       # <https://api.github.com/user/repos?per_page=100&page=2>; rel="next"
