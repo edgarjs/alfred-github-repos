@@ -15,7 +15,9 @@ def usage!
   puts 'Commands:'
   puts '  authenticate <email> <token>'
   puts '  search <query>'
+  puts '  search-all <query>'
   puts '  host <hostname>'
+  puts '  reset-cache'
   exit
 end
 
@@ -72,7 +74,27 @@ def search(query)
   return not_authenticated_output unless repos
   return no_results_output if repos.empty?
 
-  Github::RepoFormatter.new(repos).to_json
+  JSON.generate(items: repos)
+rescue Github::Authorization::NotAuthorizedError
+  not_authenticated_output
+rescue JSON::ParserError
+  error_output
+end
+
+def search_all(query)
+  repos = Github::Api.new.search_all_repos(query)
+  return not_authenticated_output unless repos
+  return no_results_output if repos.empty?
+
+  JSON.generate(items: repos)
+rescue Github::Authorization::NotAuthorizedError
+  not_authenticated_output
+rescue JSON::ParserError
+  error_output
+end
+
+def reset_cache
+  Github::Api.new.reset_cache
 rescue Github::Authorization::NotAuthorizedError
   not_authenticated_output
 rescue JSON::ParserError
@@ -86,6 +108,10 @@ when 'authenticate'
   authenticate(ARGV[1], ARGV[2])
 when 'search'
   puts search(ARGV[1])
+when 'search-all'
+  puts search_all(ARGV[1])
+when 'reset-cache'
+  reset_cache
 else
   return usage!
 end
