@@ -6,11 +6,16 @@ You can also check the [releases history](https://github.com/edgarjs/alfred-gith
 
 ---
 
-## Actions
+## Authentication
 
 1. Call `gh-token` to generate personal access token.
 2. Login by calling the `gh-login <email> <token>` action.
-3. Search any repository by calling the `gh <term>` action.
+
+## Usage
+
+1. Search your repositories by calling the `gh <term>` action.
+2. Search all repositories by calling the `gha <term>` action.
+3. Your repositories are cached and updated every 24 hours. To force re-download cache use `gh-reset-cache` action.
 
 ### Other Actions
 

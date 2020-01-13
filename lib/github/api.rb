@@ -15,6 +15,10 @@ module Github
     DEFAULT_HOST = 'https://api.github.com'
     HOST_FILE_NAME = 'host'
     CACHE_FILE_NAME = 'cache'
+    CACHE_TIMESTAMP_FILE_NAME = 'cache-timestamp'
+
+    # Remember to update Readme if changed.
+    CACHE_LIFETIME = 86_400 # 24 hours
 
     # 100 is maximum items per page
     LIST_USER_REPOS_PATH = '/user/repos?per_page=100'
@@ -32,7 +36,7 @@ module Github
     def search_repos(query)
       query_downcase = query.downcase
 
-      repos = cached_repos
+      repos = read_cached_repos
       repos = reset_cache if repos.empty?
 
       repos_filtered = repos.filter do |i|
@@ -136,13 +140,27 @@ module Github
       cache = LocalStorage.new(cache_path, serialize: false)
       content = repos.map(&:to_storage_string).join("\n")
       cache.put(content)
+      save_cache_timestamp_to_disk
     end
 
-    def cached_repos
+    def read_cache_timestamp
+      path = ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME).get
+      r = LocalStorage.new(path, serialize: false).get
+
+      r.nil? ? 0 : r.to_i
+    end
+
+    def save_cache_timestamp_to_disk
+      path = ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME).get
+      LocalStorage.new(path, serialize: false).put(Time.now.to_i)
+    end
+
+    def read_cached_repos
       cache_path = ConfigPath.new(CACHE_FILE_NAME).get
       cache_string = LocalStorage.new(cache_path, serialize: false).get
+      cache_expired = (read_cache_timestamp + CACHE_LIFETIME) < Time.now.to_i
 
-      if !cache_string.nil?
+      if !cache_string.nil? && !cache_expired
         cache_string.split("\n").map do |i|
           Github::Repo.from_storage_string(i)
         end
