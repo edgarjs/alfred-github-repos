@@ -3,7 +3,6 @@
 # frozen_string_literal: true
 
 require_relative '../lib/github_repos'
-require 'github/repo_formatter'
 require 'github/authorization'
 require 'json'
 

@@ -4,6 +4,7 @@ require 'net/http'
 require 'json'
 require 'uri'
 require 'cgi'
+require 'github/repo'
 require 'github/authorization'
 require 'local_storage'
 require 'config_path'
@@ -22,7 +23,10 @@ module Github
       path = "/search/repositories?q=#{escape(query)}"
 
       repos = get(path)[:body][:items]
-      Github::RepoFormatter.new(repos).to_formatted_hash
+
+      repos.map do |i|
+        Github::Repo.from_api_response(i).to_alfred_hash
+      end
     end
 
     def search_repos(query)
@@ -32,11 +36,11 @@ module Github
       repos = reset_cache if repos.empty?
 
       repos_filtered = repos.filter do |i|
-        title_downcase = i[:title].downcase
+        title_downcase = i.name.downcase
         title_downcase.include?(query_downcase)
       end
 
-      repos_filtered
+      repos_filtered.map(&:to_alfred_hash)
     end
 
     def reset_cache
@@ -45,14 +49,15 @@ module Github
 
       until next_page.nil?
         response = get(LIST_USER_REPOS_PATH + "&page=#{next_page}")
-        repos.push(*response[:body])
+        repos_from_response = response[:body].map do |i|
+          Github::Repo.from_api_response(i)
+        end
+        repos.push(*repos_from_response)
         next_page = response[:next_page]
       end
 
-      repos_formatted = Github::RepoFormatter.new(repos).to_formatted_hash
-
-      save_repos_to_disk(repos_formatted)
-      repos_formatted
+      save_repos_to_disk(repos)
+      repos
     end
 
     class << self
@@ -127,14 +132,23 @@ module Github
     end
 
     def save_repos_to_disk(repos)
-      cache = LocalStorage.new(ConfigPath.new(CACHE_FILE_NAME).get)
-      cache.put(repos.to_json)
+      cache_path = ConfigPath.new(CACHE_FILE_NAME).get
+      cache = LocalStorage.new(cache_path, serialize: false)
+      content = repos.map(&:to_storage_string).join("\n")
+      cache.put(content)
     end
 
     def cached_repos
       cache_path = ConfigPath.new(CACHE_FILE_NAME).get
-      cache_string = LocalStorage.new(cache_path).get
-      cache_string.nil? ? [] : JSON.parse(cache_string, symbolize_names: true)
+      cache_string = LocalStorage.new(cache_path, serialize: false).get
+
+      if !cache_string.nil?
+        cache_string.split("\n").map do |i|
+          Github::Repo.from_storage_string(i)
+        end
+      else
+        []
+      end
     end
   end
 end
