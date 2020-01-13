@@ -4,6 +4,8 @@
 <dict>
 	<key>bundleid</key>
 	<string>edgarjs.github-repos.workflow</string>
+	<key>category</key>
+	<string>Internet</string>
 	<key>connections</key>
 	<dict>
 		<key>2BD5A2D8-1263-445C-818F-1149B117043F</key>
@@ -583,7 +585,7 @@ NOTE: This is an experimental feature that may not work as expected, if you find
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>2.0.2</string>
+	<string>2.1.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/edgarjs/alfred-github-repos</string>
 </dict>
