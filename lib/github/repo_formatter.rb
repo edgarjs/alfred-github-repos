@@ -8,12 +8,10 @@ module Github
       @repos = repos
     end
 
-    def to_json(*_args)
-      items = @repos.map do |repo|
+    def to_formatted_hash
+      @repos.map do |repo|
         format_repo(repo)
       end
-
-      JSON.generate(items: items)
     end
 
     private
