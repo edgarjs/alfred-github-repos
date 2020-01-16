@@ -29,7 +29,7 @@ module Github
       repos = get(path)[:body][:items]
 
       repos.map do |i|
-        Github::Repo.from_api_response(i).to_alfred_hash
+        Repo.from_api_response(i).to_alfred_hash
       end
     end
 
@@ -54,7 +54,7 @@ module Github
       until next_page.nil?
         response = get(LIST_USER_REPOS_PATH + "&page=#{next_page}")
         repos_from_response = response[:body].map do |i|
-          Github::Repo.from_api_response(i)
+          Repo.from_api_response(i)
         end
         repos.push(*repos_from_response)
         next_page = response[:next_page]
@@ -135,38 +135,35 @@ module Github
       header.split(',').map { |i| i[regex, 1] }.find(&:itself)
     end
 
+    def cache_storage
+      @cache_path ||= ConfigPath.new(CACHE_FILE_NAME)
+      @cache_storage ||= LocalStorage.new(@cache_path.get, serialize: false)
+    end
+
+    def cache_timestamp_storage
+      @cache_timestamp_path ||= ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME)
+      @cache_timestamp_storage ||=
+        LocalStorage.new(@cache_timestamp_path.get, serialize: false)
+    end
+
     def save_repos_to_disk(repos)
-      cache_path = ConfigPath.new(CACHE_FILE_NAME).get
-      cache = LocalStorage.new(cache_path, serialize: false)
       content = repos.map(&:to_storage_string).join("\n")
-      cache.put(content)
-      save_cache_timestamp_to_disk
+      cache_storage.put(content)
+      cache_timestamp_storage.put(Time.now.to_i)
     end
 
     def read_cache_timestamp
-      path = ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME).get
-      r = LocalStorage.new(path, serialize: false).get
-
-      r.nil? ? 0 : r.to_i
-    end
-
-    def save_cache_timestamp_to_disk
-      path = ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME).get
-      LocalStorage.new(path, serialize: false).put(Time.now.to_i)
+      cache_timestamp = cache_timestamp_storage.get
+      cache_timestamp.nil? ? 0 : cache_timestamp.to_i
     end
 
     def read_cached_repos
-      cache_path = ConfigPath.new(CACHE_FILE_NAME).get
-      cache_string = LocalStorage.new(cache_path, serialize: false).get
+      cache_string = cache_storage.get
       cache_expired = (read_cache_timestamp + CACHE_LIFETIME) < Time.now.to_i
 
-      if !cache_string.nil? && !cache_expired
-        cache_string.split("\n").map do |i|
-          Github::Repo.from_storage_string(i)
-        end
-      else
-        []
-      end
+      return [] if cache_string.nil? || cache_expired
+
+      cache_string.split("\n").map { |i| Repo.from_storage_string(i) }
     end
   end
 end
