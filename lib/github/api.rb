@@ -4,6 +4,7 @@ require 'net/http'
 require 'json'
 require 'uri'
 require 'cgi'
+require 'github/repo'
 require 'github/authorization'
 require 'local_storage'
 require 'config_path'
@@ -14,6 +15,10 @@ module Github
     DEFAULT_HOST = 'https://api.github.com'
     HOST_FILE_NAME = 'host'
     CACHE_FILE_NAME = 'cache'
+    CACHE_TIMESTAMP_FILE_NAME = 'cache-timestamp'
+
+    # Remember to update Readme if changed.
+    CACHE_LIFETIME = 86_400 # 24 hours
 
     # 100 is maximum items per page
     LIST_USER_REPOS_PATH = '/user/repos?per_page=100'
@@ -22,21 +27,24 @@ module Github
       path = "/search/repositories?q=#{escape(query)}"
 
       repos = get(path)[:body][:items]
-      Github::RepoFormatter.new(repos).to_formatted_hash
+
+      repos.map do |i|
+        Repo.from_api_response(i).to_alfred_hash
+      end
     end
 
     def search_repos(query)
       query_downcase = query.downcase
 
-      repos = cached_repos
+      repos = read_cached_repos
       repos = reset_cache if repos.empty?
 
       repos_filtered = repos.filter do |i|
-        title_downcase = i[:title].downcase
+        title_downcase = i.name.downcase
         title_downcase.include?(query_downcase)
       end
 
-      repos_filtered
+      repos_filtered.map(&:to_alfred_hash)
     end
 
     def reset_cache
@@ -45,14 +53,15 @@ module Github
 
       until next_page.nil?
         response = get(LIST_USER_REPOS_PATH + "&page=#{next_page}")
-        repos.push(*response[:body])
+        repos_from_response = response[:body].map do |i|
+          Repo.from_api_response(i)
+        end
+        repos.push(*repos_from_response)
         next_page = response[:next_page]
       end
 
-      repos_formatted = Github::RepoFormatter.new(repos).to_formatted_hash
-
-      save_repos_to_disk(repos_formatted)
-      repos_formatted
+      save_repos_to_disk(repos)
+      repos
     end
 
     class << self
@@ -126,15 +135,35 @@ module Github
       header.split(',').map { |i| i[regex, 1] }.find(&:itself)
     end
 
-    def save_repos_to_disk(repos)
-      cache = LocalStorage.new(ConfigPath.new(CACHE_FILE_NAME).get)
-      cache.put(repos.to_json)
+    def cache_storage
+      @cache_path ||= ConfigPath.new(CACHE_FILE_NAME)
+      @cache_storage ||= LocalStorage.new(@cache_path.get, serialize: false)
     end
 
-    def cached_repos
-      cache_path = ConfigPath.new(CACHE_FILE_NAME).get
-      cache_string = LocalStorage.new(cache_path).get
-      cache_string.nil? ? [] : JSON.parse(cache_string, symbolize_names: true)
+    def cache_timestamp_storage
+      @cache_timestamp_path ||= ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME)
+      @cache_timestamp_storage ||=
+        LocalStorage.new(@cache_timestamp_path.get, serialize: false)
+    end
+
+    def save_repos_to_disk(repos)
+      content = repos.map(&:to_storage_string).join("\n")
+      cache_storage.put(content)
+      cache_timestamp_storage.put(Time.now.to_i)
+    end
+
+    def read_cache_timestamp
+      cache_timestamp = cache_timestamp_storage.get
+      cache_timestamp.nil? ? 0 : cache_timestamp.to_i
+    end
+
+    def read_cached_repos
+      cache_string = cache_storage.get
+      cache_expired = (read_cache_timestamp + CACHE_LIFETIME) < Time.now.to_i
+
+      return [] if cache_string.nil? || cache_expired
+
+      cache_string.split("\n").map { |i| Repo.from_storage_string(i) }
     end
   end
 end

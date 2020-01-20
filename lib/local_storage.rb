@@ -7,14 +7,16 @@ class LocalStorage
   attr_reader :location
 
   # @param [String] filepath
-  def initialize(filepath)
+  def initialize(filepath, serialize: true)
     @location = File.expand_path(filepath)
+    @serialize = serialize
     create_parent_dir
   end
 
   def put(object)
     File.open(location, 'w') do |f|
-      f.puts serialize(object)
+      to_insert = @serialize ? serialize(object) : object
+      f.puts to_insert
     end
 
     object
@@ -23,7 +25,8 @@ class LocalStorage
   def get
     return unless exists?
 
-    deserialize File.read(location)
+    raw_content = File.read(location)
+    @serialize ? deserialize(raw_content) : raw_content
   end
 
   private
