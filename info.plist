@@ -585,7 +585,7 @@ NOTE: This is an experimental feature that may not work as expected, if you find
 	<key>variablesdontexport</key>
 	<array/>
 	<key>version</key>
-	<string>2.1.0</string>
+	<string>2.1.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/edgarjs/alfred-github-repos</string>
 </dict>
