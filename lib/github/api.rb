@@ -145,6 +145,8 @@ module Github
       cache_storage.put(content)
     end
 
+    # If you're looking for a way to check how old cache is -
+    # look at code prior to commit 28e5ddd034552ec2b2df68ad5657adcdc093418e
     def read_cached_repos
       cache_string = cache_storage.get
       return [] if cache_string.nil?
