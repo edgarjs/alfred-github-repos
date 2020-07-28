@@ -15,7 +15,7 @@ You can also check the [releases history](https://github.com/edgarjs/alfred-gith
 
 1. Search your repositories by calling the `gh <term>` action.
 2. Search all repositories by calling the `gha <term>` action.
-3. Your repositories are cached and updated every 24 hours. To force re-download cache use `gh-reset-cache` action.
+3. Your repositories are cached. To force re-download cache use `gh-reset-cache` action or choose corresponding item in the `gh <term>` action.
 
 ### Other Actions
 

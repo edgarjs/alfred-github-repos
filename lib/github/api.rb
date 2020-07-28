@@ -15,10 +15,6 @@ module Github
     DEFAULT_HOST = 'https://api.github.com'
     HOST_FILE_NAME = 'host'
     CACHE_FILE_NAME = 'cache'
-    CACHE_TIMESTAMP_FILE_NAME = 'cache-timestamp'
-
-    # Remember to update Readme if changed.
-    CACHE_LIFETIME = 86_400 # 24 hours
 
     # 100 is maximum items per page
     LIST_USER_REPOS_PATH = '/user/repos?per_page=100'
@@ -42,6 +38,10 @@ module Github
       repos_filtered = repos.filter do |i|
         title_downcase = i.name.downcase
         title_downcase.include?(query_downcase)
+      end
+
+      if repos_filtered.empty?
+        return [{ title: 'Repository not found. Reset cache?', arg: 'reset_cache' }]
       end
 
       repos_filtered.map(&:to_alfred_hash)
@@ -140,28 +140,14 @@ module Github
       @cache_storage ||= LocalStorage.new(@cache_path.get, serialize: false)
     end
 
-    def cache_timestamp_storage
-      @cache_timestamp_path ||= ConfigPath.new(CACHE_TIMESTAMP_FILE_NAME)
-      @cache_timestamp_storage ||=
-        LocalStorage.new(@cache_timestamp_path.get, serialize: false)
-    end
-
     def save_repos_to_disk(repos)
       content = repos.map(&:to_storage_string).join("\n")
       cache_storage.put(content)
-      cache_timestamp_storage.put(Time.now.to_i)
-    end
-
-    def read_cache_timestamp
-      cache_timestamp = cache_timestamp_storage.get
-      cache_timestamp.nil? ? 0 : cache_timestamp.to_i
     end
 
     def read_cached_repos
       cache_string = cache_storage.get
-      cache_expired = (read_cache_timestamp + CACHE_LIFETIME) < Time.now.to_i
-
-      return [] if cache_string.nil? || cache_expired
+      return [] if cache_string.nil?
 
       cache_string.split("\n").map { |i| Repo.from_storage_string(i) }
     end
