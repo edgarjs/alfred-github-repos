@@ -34,7 +34,7 @@ module Github
       end
 
       def from_api_response(api_response)
-        new(api_response[:full_name], api_response[:html_url])
+        new(api_response[:full_name], api_response[:ssh_url])
       end
     end
   end
