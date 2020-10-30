@@ -35,7 +35,7 @@ module Github
       repos = read_cached_repos
       repos = reset_cache if repos.empty?
 
-      repos_filtered = repos.filter do |i|
+      repos_filtered = repos.select do |i|
         title_downcase = i.name.downcase
         title_downcase.include?(query_downcase)
       end
