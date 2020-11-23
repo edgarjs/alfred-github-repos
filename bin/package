@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+
+VERSION=$(ruby -Ilib -e "require 'version'; puts App::VERSION")
+OUTPUT="gh-repos-$VERSION.alfredworkflow"
+mkdir -p build
+cp -r apps build/
+cp -r lib build/
+cp assets/* build/
+cp app.rb build/
+cd build
+zip $OUTPUT -r . -qq
+ls | grep -v "$OUTPUT" | xargs rm -r
+open .
+echo "Done -> $OUTPUT"

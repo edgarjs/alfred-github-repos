@@ -1,0 +1,30 @@
+[
+  {
+    "login": "octocat",
+    "id": 1,
+    "node_id": "foobarbaz",
+    "url": "https://api.github.com/orgs/octocat",
+    "repos_url": "https://api.github.com/orgs/octocat/repos",
+    "events_url": "https://api.github.com/orgs/octocat/events",
+    "hooks_url": "https://api.github.com/orgs/octocat/hooks",
+    "issues_url": "https://api.github.com/orgs/octocat/issues",
+    "members_url": "https://api.github.com/orgs/octocat/members{/member}",
+    "public_members_url": "https://api.github.com/orgs/octocat/public_members{/member}",
+    "avatar_url": "https://avatars2.githubusercontent.com/u/1?v=4",
+    "description": null
+  },
+  {
+    "login": "acme",
+    "id": 2,
+    "node_id": "bazbarfoo",
+    "url": "https://api.github.com/orgs/acme",
+    "repos_url": "https://api.github.com/orgs/acme/repos",
+    "events_url": "https://api.github.com/orgs/acme/events",
+    "hooks_url": "https://api.github.com/orgs/acme/hooks",
+    "issues_url": "https://api.github.com/orgs/acme/issues",
+    "members_url": "https://api.github.com/orgs/acme/members{/member}",
+    "public_members_url": "https://api.github.com/orgs/acme/public_members{/member}",
+    "avatar_url": "https://avatars2.githubusercontent.com/u/2?v=4",
+    "description": null
+  }
+]

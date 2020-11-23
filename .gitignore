@@ -1,1 +1,3 @@
 *.alfredworkflow
+build/
+coverage/

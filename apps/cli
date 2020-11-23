@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+module Apps
+  class Cli
+    def initialize(search:, user_repos:, user_pulls:, help:)
+      @search = search
+      @user_repos = user_repos
+      @user_pulls = user_pulls
+      @help = help
+    end
+
+    def call(args)
+      command = extract_command!(args)
+      raise @help.call(args) unless command
+
+      command.call(args)
+    end
+
+    private
+
+    def extract_command!(args)
+      case args.shift
+      when 'search' then @search
+      when 'user-repos' then @user_repos
+      when 'user-pulls' then @user_pulls
+      when 'help' then @help
+      end
+    end
+  end
+end
+
+if __FILE__ == $0
+  require_relative '../app'
+
+  begin
+    cli = Apps::Cli.new(
+      search: App.search,
+      user_repos: App.user_repos,
+      user_pulls: App.user_pulls,
+      help: App.help
+    )
+    puts cli.call(ARGV)
+    exit(true)
+  rescue => error
+    puts error
+    exit(false)
+  end
+end
