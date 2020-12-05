@@ -10,7 +10,6 @@ end
 
 group :test do
   gem 'minitest', '~> 5.14', require: 'minitest/autorun'
-  gem 'minitest-ci', '~> 3.4', require: false
   gem 'minitest-reporters', '~> 1.4'
   gem 'mocha', '~> 1.11', require: 'mocha/minitest'
   gem 'simplecov', '~> 0.19', require: false

@@ -13,8 +13,6 @@ GEM
     hashdiff (1.0.1)
     method_source (1.0.0)
     minitest (5.14.2)
-    minitest-ci (3.4.0)
-      minitest (>= 5.0.6)
     minitest-reporters (1.4.2)
       ansi
       builder
@@ -45,7 +43,6 @@ PLATFORMS
 DEPENDENCIES
   dotenv (~> 2.7)
   minitest (~> 5.14)
-  minitest-ci (~> 3.4)
   minitest-reporters (~> 1.4)
   mocha (~> 1.11)
   pry-byebug

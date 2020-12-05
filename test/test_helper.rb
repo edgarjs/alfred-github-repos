@@ -12,9 +12,4 @@ require 'bundler/setup'
 
 Bundler.require(:test)
 
-if ENV['CI']
-  require 'minitest/ci'
-  Minitest::Ci.report_dir = 'test_results'
-end
-
 Minitest::Reporters.use! [Minitest::Reporters::DefaultReporter.new]
