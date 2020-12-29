@@ -86,8 +86,8 @@ module Github
     end
 
     def get(path)
-      req = Net::HTTP::Get.new(path)
-      uri = URI("#{host}#{req.path}")
+      uri = URI("#{host}#{path}")
+      req = Net::HTTP::Get.new(uri.path)
 
       authorize(req)
 
