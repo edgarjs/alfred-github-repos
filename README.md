@@ -32,9 +32,23 @@ This command works the same as the previous one (`gh <query>`) but it limits the
 
 This command searches within the Pull Requests that you're involved in.
 
+If you want to limit the search to be under your organisations, please remove `PR_ALL_INVOLVE_ME` environment variable
+
 ### Open notifications: `gh-notifications`
 
 This command just opens your [Github notification][notifications-page] page.
+
+## Config Cache TTL
+
+You can customise the TTL for the internal caches of Repos/Organisations/PullRequests by seting the following
+environment variables. (all in seconds)
+
+```
+> CACHE_TTL_SEC_ORG  default: 86400
+> CACHE_TTL_SEC_PR  default: 300
+> CACHE_TTL_SEC_REPO default: 86400
+```
+
 
 ## Configuring host for Enterprise
 

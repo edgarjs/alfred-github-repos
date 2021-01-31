@@ -7,17 +7,30 @@ require 'fileutils'
 module DataSource
   module Client
     class Github
-      CACHE_TTL_SECS = 3600 * 12
 
       def initialize(config)
         @host = config[:host]
         @access_token = config[:access_token]
         @cache_dir = config[:cache_dir]
+        @me_account = config[:me_account]
+        @pr_all_involve_me = config[:pr_all_involve_me]
+
+        @cache_name_hash = {
+            user_repos: 'user_repos',
+            user_orgs: 'user_orgs',
+            user_pulls: 'user_pulls'
+        }
+
+        @cache_ttl_hash = {
+            user_repos: config[:cache_ttl_sec_repo],
+            user_orgs: config[:cache_ttl_sec_org],
+            user_pulls: config[:cache_ttl_sec_pr]
+        }
       end
 
       def search_repos(params)
         modifiers = ['in:name']
-        modifiers += org_modifiers('user:@me') if params[:mine]
+        modifiers += org_modifiers("user:#@me_account") if params[:mine]
         params = search_params(params[:query], modifiers)
         response = request('/search/repositories', params)
         handle_response(response)[:items]
@@ -25,22 +38,74 @@ module DataSource
 
       def user_repos
         params = {
-          sort: 'pushed',
-          direction: 'desc',
-          per_page: 100
+            sort: 'pushed',
+            direction: 'desc',
+            per_page: 100
         }
-        with_cache('user_repos') do
-          request('/user/repos', params)
+        with_cache(:user_repos) do
+
+          page_count = get_total_page_for_request('/user/repos', params)
+          if page_count != nil
+            all_user_repos = Array.new
+            write = true
+            (1..page_count).step(1) do |n|
+              params[:page] = n
+              part_res = request('/user/repos', params)
+              if not part_res.is_a?(Net::HTTPSuccess)
+                write = false
+                break
+              else
+                all_user_repos = all_user_repos+ deserialize_body(part_res.body)
+              end
+            end
+            {write: write, cache_content: all_user_repos}
+          else
+            res = request('/user/repos', params)
+            if not res.is_a?(Net::HTTPSuccess)
+              { write: false, cache_content: nil }
+            else
+              { write: true, cache_content: deserialize_body(res.body) }
+            end
+          end
+
         end
+
       end
 
       def user_pulls
-        modifiers = org_modifiers('is:pr', 'user:@me', 'state:open', 'involves:@me')
+
+        if @pr_all_involve_me.nil?
+          modifiers = org_modifiers('is:pr', "user:#@me_account", 'state:open', "involves:#@me_account")
+        else
+          modifiers = ['is:pr', 'state:open', "involves:#@me_account"]
+        end
         params = search_params('', modifiers).merge(
-          per_page: 100
+            per_page: 100
         )
-        response = with_cache('user_pulls') do
-          request('/search/issues', params)
+        response = with_cache(:user_pulls) do
+          page_count = get_total_page_for_request('/search/issues', params)
+          if page_count != nil
+            all_user_pulls = Array.new
+            write = true
+            (1..page_count).step(1) do |n|
+              params[:page] = n
+              part_res = request('/search/issues', params)
+              if not part_res.is_a?(Net::HTTPSuccess)
+                write = false
+                break
+              else
+                all_user_pulls = all_user_pulls+ deserialize_body(part_res.body)
+              end
+            end
+            {write: write, cache_content: all_user_pulls}
+          else
+            res = request('/search/issues', params)
+            if not res.is_a?(Net::HTTPSuccess)
+              { write: false, cache_content: nil }
+            else
+              { write: true, cache_content: deserialize_body(res.body) }
+            end
+          end
         end
         response[:items]
       end
@@ -52,7 +117,14 @@ module DataSource
       end
 
       def org_modifiers(*initial)
-        orgs = with_cache('user_orgs') { request('/user/orgs') }
+        orgs = with_cache(:user_orgs) do
+          res = request('/user/orgs')
+          if not res.is_a?(Net::HTTPSuccess)
+            { write: false, cache_content: nil }
+          else
+            { write: true, cache_content: deserialize_body(res.body) }
+          end
+        end
         orgs.inject(initial) do |memo, org|
           memo << "org:#{org[:login]}"
         end
@@ -70,21 +142,21 @@ module DataSource
 
       def with_cache(filename, &block)
         cache = read_cache(filename)
-        return cache if cache
 
-        res = block.call
-        write_cache(filename, res.body) if res.is_a?(Net::HTTPSuccess)
-        handle_response(res)
+        return cache if cache
+        ret = block.call
+        write_cache(filename, JSON.dump(ret[:cache_content])) if ret[:write]
+        ret[:cache_content]
       end
 
       def read_cache(filename)
         return unless @cache_dir
 
-        path = File.join(@cache_dir, filename)
+        path = File.join(@cache_dir, @cache_name_hash[filename])
         return unless File.exist?(path)
 
         file = File.stat(path)
-        return if (Time.now - file.mtime) >= CACHE_TTL_SECS
+        return if (Time.now - file.mtime) >= @cache_ttl_hash[filename]
 
         deserialize_body(File.read(path))
       rescue JSON::ParserError
@@ -95,7 +167,7 @@ module DataSource
         return value unless @cache_dir
 
         FileUtils.mkdir_p(@cache_dir) unless File.directory?(@cache_dir)
-        path = File.join(@cache_dir, filename)
+        path = File.join(@cache_dir, @cache_name_hash[filename])
         File.open(path, 'w') { |f| f.write(value) }
         value
       end
@@ -105,6 +177,20 @@ module DataSource
         request['Accept'] = request['Content-Type'] = 'application/vnd.github.v3+json'
         request.basic_auth('', @access_token)
         request
+      end
+
+      def get_total_page_for_request(path, params = {})
+        res = request(path, params)
+        raise res[:message] unless res.is_a?(Net::HTTPSuccess)
+
+        begin
+          res.header["Link"].split(",").map do |result|
+            page_num, rel = result.match(/&page=(\d+)>; .*?"(\w+)"/i).captures
+            return page_num.to_i if rel == "last"
+          end
+        rescue StandardError => e
+          nil
+        end
       end
 
       def handle_response(response)
