@@ -38,9 +38,9 @@ module DataSource
 
       def user_repos
         params = {
-            sort: 'pushed',
-            direction: 'desc',
-            per_page: 100
+          sort: 'pushed',
+          direction: 'desc',
+          per_page: 100
         }
         with_cache(:user_repos) do
 
@@ -73,14 +73,13 @@ module DataSource
       end
 
       def user_pulls
-
         if @pr_all_involve_me.nil?
           modifiers = org_modifiers('is:pr', "user:#@me_account", 'state:open', "involves:#@me_account")
         else
           modifiers = ['is:pr', 'state:open', "involves:#@me_account"]
         end
         params = search_params('', modifiers).merge(
-            per_page: 100
+          per_page: 100
         )
         response = with_cache(:user_pulls) do
           page_count = get_total_page_for_request('/search/issues', params)
