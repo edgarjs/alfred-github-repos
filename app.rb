@@ -18,7 +18,7 @@ class App
           host: ENV['GITHUB_API_HOST'] || 'api.github.com',
           access_token: ENV['GITHUB_ACCESS_TOKEN'],
           me_account: ENV['GITHUB_ME_ACCOUNT'] || '@me',
-          pr_all_involve_me: ENV['PR_ALL_INVOLVE_ME'],
+          pr_all_involve_me: ENV['PR_ALL_INVOLVE_ME'].nil?,
           cache_dir: ENV['alfred_workflow_cache'],
           cache_ttl_sec_repo: (ENV['CACHE_TTL_SEC_REPO'] || (24 * 60 * 60)).to_i,
           cache_ttl_sec_org: (ENV['CACHE_TTL_SEC_ORG'] || (24 * 60 * 60)).to_i,

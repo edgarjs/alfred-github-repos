@@ -42,74 +42,72 @@ module DataSource
           direction: 'desc',
           per_page: 100
         }
-        with_cache(:user_repos) do
-
-          page_count = get_total_page_for_request('/user/repos', params)
-          if page_count != nil
-            all_user_repos = Array.new
-            write = true
-            (1..page_count).step(1) do |n|
-              params[:page] = n
-              part_res = request('/user/repos', params)
-              if not part_res.is_a?(Net::HTTPSuccess)
-                write = false
-                break
-              else
-                all_user_repos = all_user_repos+ deserialize_body(part_res.body)
-              end
-            end
-            {write: write, cache_content: all_user_repos}
-          else
-            res = request('/user/repos', params)
-            if not res.is_a?(Net::HTTPSuccess)
-              { write: false, cache_content: nil }
-            else
-              { write: true, cache_content: deserialize_body(res.body) }
-            end
-          end
-
+        responses = with_cache(:user_repos) do
+          all_user_repos = merge_multipage_results('/user/repos', params, 100)
+          all_user_repos
         end
 
+        all_user_repos = Array.new
+        responses.each do |response|
+          all_user_repos = all_user_repos + response
+        end
+        all_user_repos
       end
 
       def user_pulls
-        if @pr_all_involve_me.nil?
-          modifiers = org_modifiers('is:pr', "user:#@me_account", 'state:open', "involves:#@me_account")
-        else
+        if @pr_all_involve_me
           modifiers = ['is:pr', 'state:open', "involves:#@me_account"]
+        else
+          modifiers = org_modifiers('is:pr', "user:#@me_account", 'state:open', "involves:#@me_account")
         end
         params = search_params('', modifiers).merge(
           per_page: 100
         )
-        response = with_cache(:user_pulls) do
-          page_count = get_total_page_for_request('/search/issues', params)
-          if page_count != nil
-            all_user_pulls = Array.new
-            write = true
-            (1..page_count).step(1) do |n|
-              params[:page] = n
-              part_res = request('/search/issues', params)
-              if not part_res.is_a?(Net::HTTPSuccess)
-                write = false
-                break
-              else
-                all_user_pulls = all_user_pulls+ deserialize_body(part_res.body)
-              end
-            end
-            {write: write, cache_content: all_user_pulls}
-          else
-            res = request('/search/issues', params)
-            if not res.is_a?(Net::HTTPSuccess)
-              { write: false, cache_content: nil }
-            else
-              { write: true, cache_content: deserialize_body(res.body) }
-            end
-          end
+        responses = with_cache(:user_pulls) do
+          all_user_pulls = merge_multipage_results('/search/issues', params, 100)
+          all_user_pulls
         end
-        response[:items]
+        all_user_pulls = Array.new
+        responses.each do |response|
+          all_user_pulls = all_user_pulls + response[:items]
+        end
+        all_user_pulls
       end
 
       private
+
+      def merge_multipage_results(path, params, per_page)
+        params[:per_page] = per_page
+        params[:page] = 1
+        res = request(path, params)
+        raise res[:message] unless res.is_a?(Net::HTTPSuccess)
+
+        result = Array.new
+        result.append deserialize_body(res.body)
+
+
+        page_count = 1
+        if res.key?("Link")
+          res["Link"].split(",").map do |result|
+            page_num, rel = result.match(/&page=(\d+)>; .*?"(\w+)"/i).captures
+            page_count = page_num.to_i if rel == "last"
+          end
+        end
+
+        (2..page_count).step(1) do |n|
+          params[:page] = n
+          params[:per_page] = per_page
+          part_res = request(path, params)
+          if not part_res.is_a?(Net::HTTPSuccess)
+            result = nil
+            break
+          else
+            result.append deserialize_body(part_res.body)
+          end
+        end
+        result
+      end
+
 
       def search_params(query, modifiers)
         { q: "#{query} #{modifiers.join(' ')}" }
@@ -119,9 +117,9 @@ module DataSource
         orgs = with_cache(:user_orgs) do
           res = request('/user/orgs')
           if not res.is_a?(Net::HTTPSuccess)
-            { write: false, cache_content: nil }
+            nil
           else
-            { write: true, cache_content: deserialize_body(res.body) }
+            deserialize_body(res.body)
           end
         end
         orgs.inject(initial) do |memo, org|
@@ -144,8 +142,8 @@ module DataSource
 
         return cache if cache
         ret = block.call
-        write_cache(filename, JSON.dump(ret[:cache_content])) if ret[:write]
-        ret[:cache_content]
+        write_cache(filename, ret)
+        ret
       end
 
       def read_cache(filename)
@@ -162,12 +160,13 @@ module DataSource
         nil
       end
 
+
       def write_cache(filename, value)
         return value unless @cache_dir
 
         FileUtils.mkdir_p(@cache_dir) unless File.directory?(@cache_dir)
         path = File.join(@cache_dir, @cache_name_hash[filename])
-        File.open(path, 'w') { |f| f.write(value) }
+        File.open(path, 'w') { |f| f.write(JSON.dump(value)) }
         value
       end
 
@@ -176,20 +175,6 @@ module DataSource
         request['Accept'] = request['Content-Type'] = 'application/vnd.github.v3+json'
         request.basic_auth('', @access_token)
         request
-      end
-
-      def get_total_page_for_request(path, params = {})
-        res = request(path, params)
-        raise res[:message] unless res.is_a?(Net::HTTPSuccess)
-
-        begin
-          res.header["Link"].split(",").map do |result|
-            page_num, rel = result.match(/&page=(\d+)>; .*?"(\w+)"/i).captures
-            return page_num.to_i if rel == "last"
-          end
-        rescue StandardError => e
-          nil
-        end
       end
 
       def handle_response(response)
