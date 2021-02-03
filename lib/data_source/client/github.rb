@@ -139,7 +139,6 @@ module DataSource
 
       def with_cache(filename, &block)
         cache = read_cache(filename)
-
         return cache if cache
         ret = block.call
         write_cache(filename, ret)
@@ -159,7 +158,6 @@ module DataSource
       rescue JSON::ParserError
         nil
       end
-
 
       def write_cache(filename, value)
         return value unless @cache_dir
