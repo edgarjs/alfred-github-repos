@@ -64,8 +64,7 @@ module DataSource
           per_page: 100
         )
         responses = with_cache(:user_pulls) do
-          all_user_pulls = merge_multipage_results('/search/issues', params, 100)
-          all_user_pulls
+          merge_multipage_results('/search/issues', params, 100)
         end
         all_user_pulls = Array.new
         responses.each do |response|
