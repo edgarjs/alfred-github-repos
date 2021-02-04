@@ -82,8 +82,7 @@ module DataSource
         res = request(path, params)
         raise res[:message] unless res.is_a?(Net::HTTPSuccess)
 
-        result = Array.new
-        result.append deserialize_body(res.body)
+        result = [deserialize_body(res.body)]
 
 
         page_count = 1
