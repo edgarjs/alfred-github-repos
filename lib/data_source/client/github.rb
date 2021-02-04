@@ -9,11 +9,16 @@ module DataSource
     class Github
 
       def initialize(config)
-        @host = config[:host]
-        @access_token = config[:access_token]
-        @cache_dir = config[:cache_dir]
-        @me_account = config[:me_account]
-        @pr_all_involve_me = config[:pr_all_involve_me]
+        @config = {
+            host: 'api.github.com',
+            access_token: nil,
+            me_account: '@me',
+            pr_all_involve_me: false,
+            cache_dir: nil,
+            cache_ttl_sec_repo: 24 * 60 * 60,
+            cache_ttl_sec_org: 24 * 60 * 60,
+            cache_ttl_sec_pr: 5 * 60,
+        }.merge(config)
 
         @cache_name_hash = {
             user_repos: 'user_repos',
@@ -22,15 +27,15 @@ module DataSource
         }
 
         @cache_ttl_hash = {
-            user_repos: config[:cache_ttl_sec_repo],
-            user_orgs: config[:cache_ttl_sec_org],
-            user_pulls: config[:cache_ttl_sec_pr]
+            user_repos: @config[:cache_ttl_sec_repo],
+            user_orgs: @config[:cache_ttl_sec_org],
+            user_pulls: @config[:cache_ttl_sec_pr]
         }
       end
 
       def search_repos(params)
         modifiers = ['in:name']
-        modifiers += org_modifiers("user:#@me_account") if params[:mine]
+        modifiers += org_modifiers("user:#{@config[:me_account]}") if params[:mine]
         params = search_params(params[:query], modifiers)
         response = request('/search/repositories', params)
         handle_response(response)[:items]
@@ -43,34 +48,20 @@ module DataSource
           per_page: 100
         }
         responses = with_cache(:user_repos) do
-          all_user_repos = merge_multipage_results('/user/repos', params, 100)
-          all_user_repos
+          merge_multipage_results('/user/repos', params, 100)
         end
-
-        all_user_repos = Array.new
-        responses.each do |response|
-          all_user_repos = all_user_repos + response
-        end
-        all_user_repos
+        responses.flatten(1)
       end
 
       def user_pulls
-        if @pr_all_involve_me
-          modifiers = ['is:pr', 'state:open', "involves:#@me_account"]
-        else
-          modifiers = org_modifiers('is:pr', "user:#@me_account", 'state:open', "involves:#@me_account")
-        end
-        params = search_params('', modifiers).merge(
+        params = search_params('', pull_modifiers).merge(
           per_page: 100
         )
         responses = with_cache(:user_pulls) do
           merge_multipage_results('/search/issues', params, 100)
         end
-        all_user_pulls = Array.new
-        responses.each do |response|
-          all_user_pulls = all_user_pulls + response[:items]
-        end
-        all_user_pulls
+
+        responses.flat_map {|r| r[:items]}
       end
 
       private
@@ -83,14 +74,7 @@ module DataSource
 
         result = [deserialize_body(res.body)]
 
-
-        page_count = 1
-        if res.key?("Link")
-          res["Link"].split(",").map do |result|
-            page_num, rel = result.match(/&page=(\d+)>; .*?"(\w+)"/i).captures
-            page_count = page_num.to_i if rel == "last"
-          end
-        end
+        page_count = results_last_page(res)
 
         (2..page_count).step(1) do |n|
           params[:page] = n
@@ -100,10 +84,21 @@ module DataSource
             result = nil
             break
           else
-            result.append deserialize_body(part_res.body)
+            result << deserialize_body(part_res.body)
           end
         end
         result
+      end
+
+      def results_last_page(res)
+        page_count = 1
+        if res.key?("Link")
+          res["Link"].split(",").find do |link|
+            page_num, rel = link.match(/&page=(\d+)>; .*?"(\w+)"/i).captures
+            page_count = page_num.to_i if rel == "last"
+          end
+        end
+        page_count
       end
 
 
@@ -111,14 +106,18 @@ module DataSource
         { q: "#{query} #{modifiers.join(' ')}" }
       end
 
+      def pull_modifiers
+        if @config[:pr_all_involve_me]
+          ['is:pr', 'state:open', "involves:#{@config[:me_account]}"]
+        else
+          org_modifiers('is:pr', "user:#{@config[:me_account]}", 'state:open', "involves:#{@config[:me_account]}")
+        end
+      end
+
       def org_modifiers(*initial)
         orgs = with_cache(:user_orgs) do
           res = request('/user/orgs')
-          if not res.is_a?(Net::HTTPSuccess)
-            nil
-          else
-            deserialize_body(res.body)
-          end
+          res.is_a?(Net::HTTPSuccess) ? deserialize_body(res.body) : []
         end
         orgs.inject(initial) do |memo, org|
           memo << "org:#{org[:login]}"
@@ -126,7 +125,7 @@ module DataSource
       end
 
       def request(path, params = {})
-        uri = URI("https://#{@host}#{path}")
+        uri = URI("https://#{@config[:host]}#{path}")
         params[:per_page] ||= 10
         uri.query = URI.encode_www_form(params)
         request = build_request(uri)
@@ -144,9 +143,9 @@ module DataSource
       end
 
       def read_cache(filename)
-        return unless @cache_dir
+        return unless @config[:cache_dir]
 
-        path = File.join(@cache_dir, @cache_name_hash[filename])
+        path = File.join(@config[:cache_dir], @cache_name_hash[filename])
         return unless File.exist?(path)
 
         file = File.stat(path)
@@ -158,10 +157,10 @@ module DataSource
       end
 
       def write_cache(filename, value)
-        return value unless @cache_dir
+        return value unless @config[:cache_dir]
 
-        FileUtils.mkdir_p(@cache_dir) unless File.directory?(@cache_dir)
-        path = File.join(@cache_dir, @cache_name_hash[filename])
+        FileUtils.mkdir_p(@config[:cache_dir]) unless File.directory?(@config[:cache_dir])
+        path = File.join(@config[:cache_dir], @cache_name_hash[filename])
         File.open(path, 'w') { |f| f.write(JSON.dump(value)) }
         value
       end
@@ -169,7 +168,7 @@ module DataSource
       def build_request(uri)
         request = Net::HTTP::Get.new(uri)
         request['Accept'] = request['Content-Type'] = 'application/vnd.github.v3+json'
-        request.basic_auth('', @access_token)
+        request.basic_auth('', @config[:access_token])
         request
       end
 

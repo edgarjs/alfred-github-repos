@@ -15,14 +15,14 @@ class App
   class << self
     def client
       DataSource::Client::Github.new(
-          host: ENV['GITHUB_API_HOST'] || 'api.github.com',
+          host: ENV['GITHUB_API_HOST'],
           access_token: ENV['GITHUB_ACCESS_TOKEN'],
-          me_account: ENV['GITHUB_ME_ACCOUNT'] || '@me',
+          me_account: ENV['GITHUB_ME_ACCOUNT'],
           pr_all_involve_me: bool_env('PR_ALL_INVOLVE_ME'),
           cache_dir: ENV['alfred_workflow_cache'],
-          cache_ttl_sec_repo: (ENV['CACHE_TTL_SEC_REPO'] || (24 * 60 * 60)).to_i,
-          cache_ttl_sec_org: (ENV['CACHE_TTL_SEC_ORG'] || (24 * 60 * 60)).to_i,
-          cache_ttl_sec_pr: (ENV['CACHE_TTL_SEC_PR'] || (5 * 60)).to_i,
+          cache_ttl_sec_repo: ENV['CACHE_TTL_SEC_REPO'].to_i,
+          cache_ttl_sec_org: ENV['CACHE_TTL_SEC_ORG'].to_i,
+          cache_ttl_sec_pr: ENV['CACHE_TTL_SEC_PR'].to_i
           )
     end
 
