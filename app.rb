@@ -52,9 +52,7 @@ class App
 
     private
     def bool_env(env_var_name)
-      return false if ENV[env_var_name].nil?
-      return false if ENV[env_var_name].downcase=="false"
-      true
+      ENV.fetch(env_var_name, 'false').downcase == 'true'
     end
   end
 end
