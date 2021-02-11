@@ -21,9 +21,9 @@ module DataSource
         }.merge(config)
 
         @cache_name_hash = {
-            user_repos: 'user_repos',
-            user_orgs: 'user_orgs',
-            user_pulls: 'user_pulls'
+          user_repos: 'user_repos',
+          user_orgs: 'user_orgs',
+          user_pulls: 'user_pulls'
         }
 
         @cache_ttl_hash = {
