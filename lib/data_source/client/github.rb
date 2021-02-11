@@ -27,9 +27,9 @@ module DataSource
         }
 
         @cache_ttl_hash = {
-            user_repos: @config[:cache_ttl_sec_repo],
-            user_orgs: @config[:cache_ttl_sec_org],
-            user_pulls: @config[:cache_ttl_sec_pr]
+          user_repos: @config[:cache_ttl_sec_repo],
+          user_orgs: @config[:cache_ttl_sec_org],
+          user_pulls: @config[:cache_ttl_sec_pr]
         }
       end
 
