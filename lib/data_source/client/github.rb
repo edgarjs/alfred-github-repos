@@ -10,14 +10,14 @@ module DataSource
 
       def initialize(config)
         @config = {
-            host: 'api.github.com',
-            access_token: nil,
-            me_account: '@me',
-            pr_all_involve_me: false,
-            cache_dir: nil,
-            cache_ttl_sec_repo: 24 * 60 * 60,
-            cache_ttl_sec_org: 24 * 60 * 60,
-            cache_ttl_sec_pr: 5 * 60,
+          host: 'api.github.com',
+          access_token: nil,
+          me_account: '@me',
+          pr_all_involve_me: false,
+          cache_dir: nil,
+          cache_ttl_sec_repo: 24 * 60 * 60,
+          cache_ttl_sec_org: 24 * 60 * 60,
+          cache_ttl_sec_pr: 5 * 60,
         }.merge(config)
 
         @cache_name_hash = {
