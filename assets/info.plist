@@ -232,7 +232,7 @@
 				<key>spaces</key>
 				<string></string>
 				<key>url</key>
-				<string>https://github.com/notifications</string>
+				<string>https://{var:GITHUB_HOST}/notifications</string>
 				<key>utf8</key>
 				<false/>
 			</dict>
@@ -299,25 +299,6 @@ fi</string>
 		<dict>
 			<key>config</key>
 			<dict>
-				<key>browser</key>
-				<string></string>
-				<key>spaces</key>
-				<string></string>
-				<key>url</key>
-				<string>https://github.com/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
-				<key>utf8</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.openurl</string>
-			<key>uid</key>
-			<string>9374E671-4FB9-48BF-8834-95DDBFDA41CF</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
 				<key>lastpathcomponent</key>
 				<false/>
 				<key>onlyshowifquerypopulated</key>
@@ -333,27 +314,6 @@ fi</string>
 			<string>alfred.workflow.output.notification</string>
 			<key>uid</key>
 			<string>8E28AD52-A4BF-4D83-B831-536C53E12B4B</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>argumenttype</key>
-				<integer>2</integer>
-				<key>keyword</key>
-				<string>gh-token</string>
-				<key>subtext</key>
-				<string>Once you have your token, run `gh-login &lt;your-token&gt;`</string>
-				<key>text</key>
-				<string>Generate a personal access token</string>
-				<key>withspace</key>
-				<false/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.keyword</string>
-			<key>uid</key>
-			<string>F2578320-696B-4844-AE63-6A9B88C77B26</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -395,33 +355,14 @@ fi</string>
 				<key>spaces</key>
 				<string></string>
 				<key>url</key>
-				<string>https://github.com/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
+				<string>https://{var:GITHUB_HOST}/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
 				<key>utf8</key>
 				<false/>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.action.openurl</string>
 			<key>uid</key>
-			<string>74368575-DA05-42F3-A54D-63168FF72AC8</string>
-			<key>version</key>
-			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>browser</key>
-				<string></string>
-				<key>spaces</key>
-				<string></string>
-				<key>url</key>
-				<string>{query}</string>
-				<key>utf8</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.action.openurl</string>
-			<key>uid</key>
-			<string>BBD79FE5-D671-40AB-A1EE-AEBE941E2FCB</string>
+			<string>9374E671-4FB9-48BF-8834-95DDBFDA41CF</string>
 			<key>version</key>
 			<integer>1</integer>
 		</dict>
@@ -475,6 +416,114 @@ fi</string>
 			<string>alfred.workflow.input.scriptfilter</string>
 			<key>uid</key>
 			<string>19349FF9-A6A4-4D6A-ADBA-3F3092F9E727</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argumenttype</key>
+				<integer>2</integer>
+				<key>keyword</key>
+				<string>gh-token</string>
+				<key>subtext</key>
+				<string>Once you have your token, run `gh-login &lt;your-token&gt;`</string>
+				<key>text</key>
+				<string>Generate a personal access token</string>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.keyword</string>
+			<key>uid</key>
+			<string>F2578320-696B-4844-AE63-6A9B88C77B26</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>https://{var:GITHUB_HOST}/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
+				<key>utf8</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>74368575-DA05-42F3-A54D-63168FF72AC8</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
+				<key>utf8</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>BBD79FE5-D671-40AB-A1EE-AEBE941E2FCB</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>gh</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>1</integer>
+				<key>queuemode</key>
+				<integer>2</integer>
+				<key>runningsubtext</key>
+				<string>Fetching results...</string>
+				<key>script</key>
+				<string>apps/cli search $@</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>Use `repo` instead of `gh` to only search within your own repos</string>
+				<key>title</key>
+				<string>Search for a repository in Github</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>72D9F53C-2F43-447A-8012-CA07801C1407</string>
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
@@ -539,7 +588,7 @@ end run</string>
 				<key>subtext</key>
 				<string>Type `gh-token` to generate a new token</string>
 				<key>text</key>
-				<string>Paste your personal access token</string>
+				<string>Paste your personall access token</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
@@ -570,55 +619,6 @@ end run</string>
 			<string>094FF699-5788-4782-8466-393E63414D15</string>
 			<key>version</key>
 			<integer>1</integer>
-		</dict>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>alfredfiltersresultsmatchmode</key>
-				<integer>0</integer>
-				<key>argumenttreatemptyqueryasnil</key>
-				<false/>
-				<key>argumenttrimmode</key>
-				<integer>0</integer>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>keyword</key>
-				<string>gh</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyinitially</key>
-				<false/>
-				<key>queuedelaymode</key>
-				<integer>1</integer>
-				<key>queuemode</key>
-				<integer>2</integer>
-				<key>runningsubtext</key>
-				<string>Fetching results...</string>
-				<key>script</key>
-				<string>apps/cli search $1</string>
-				<key>scriptargtype</key>
-				<integer>1</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>Use `repo` instead of `gh` to only search within your own repos</string>
-				<key>title</key>
-				<string>Search for a repository in Github</string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>72D9F53C-2F43-447A-8012-CA07801C1407</string>
-			<key>version</key>
-			<integer>3</integer>
 		</dict>
 		<dict>
 			<key>config</key>
@@ -654,7 +654,7 @@ end run</string>
     set token to (item 1 of argv)
 
     tell application id "com.runningwithcrayons.Alfred"
-        set configuration "GITHUB_HOST" to value token in workflow bundleID with exportable
+        set configuration "GITHUB_API_HOST" to value token in workflow bundleID with exportable
     end tell
 end run</string>
 				<key>scriptargtype</key>
@@ -740,14 +740,14 @@ https://github.com/edgarjs/alfred-github-repos/issues</string>
 			<key>xpos</key>
 			<integer>45</integer>
 			<key>ypos</key>
-			<integer>330</integer>
+			<integer>215</integer>
 		</dict>
 		<key>2BD5A2D8-1263-445C-818F-1149B117043F</key>
 		<dict>
 			<key>xpos</key>
 			<integer>765</integer>
 			<key>ypos</key>
-			<integer>625</integer>
+			<integer>645</integer>
 		</dict>
 		<key>381B37AB-78A2-43C6-9D32-878D4A81B5B5</key>
 		<dict>
@@ -768,19 +768,19 @@ https://github.com/edgarjs/alfred-github-repos/issues</string>
 			<key>xpos</key>
 			<integer>45</integer>
 			<key>ypos</key>
-			<integer>605</integer>
+			<integer>380</integer>
 		</dict>
 		<key>74368575-DA05-42F3-A54D-63168FF72AC8</key>
 		<dict>
 			<key>xpos</key>
-			<integer>1090</integer>
+			<integer>1145</integer>
 			<key>ypos</key>
-			<integer>285</integer>
+			<integer>280</integer>
 		</dict>
 		<key>7B59839B-A868-4F5C-8A93-5AFD865D55AE</key>
 		<dict>
 			<key>xpos</key>
-			<integer>950</integer>
+			<integer>1145</integer>
 			<key>ypos</key>
 			<integer>35</integer>
 		</dict>
@@ -794,16 +794,16 @@ https://github.com/edgarjs/alfred-github-repos/issues</string>
 		<key>8E28AD52-A4BF-4D83-B831-536C53E12B4B</key>
 		<dict>
 			<key>xpos</key>
-			<integer>1025</integer>
+			<integer>1145</integer>
 			<key>ypos</key>
-			<integer>160</integer>
+			<integer>150</integer>
 		</dict>
 		<key>9374E671-4FB9-48BF-8834-95DDBFDA41CF</key>
 		<dict>
 			<key>xpos</key>
-			<integer>535</integer>
+			<integer>470</integer>
 			<key>ypos</key>
-			<integer>140</integer>
+			<integer>190</integer>
 		</dict>
 		<key>AA6DB3CD-E9B5-42AC-ABC9-919DBB8F713B</key>
 		<dict>
@@ -815,16 +815,16 @@ https://github.com/edgarjs/alfred-github-repos/issues</string>
 		<key>BBD79FE5-D671-40AB-A1EE-AEBE941E2FCB</key>
 		<dict>
 			<key>xpos</key>
-			<integer>535</integer>
+			<integer>470</integer>
 			<key>ypos</key>
-			<integer>320</integer>
+			<integer>380</integer>
 		</dict>
 		<key>C192E47C-82CC-40C9-9B16-9675BB6A0E08</key>
 		<dict>
 			<key>xpos</key>
-			<integer>270</integer>
+			<integer>260</integer>
 			<key>ypos</key>
-			<integer>225</integer>
+			<integer>160</integer>
 		</dict>
 		<key>D1A2D55E-BB7C-481A-9058-E0838736E2AF</key>
 		<dict>
@@ -857,10 +857,22 @@ https://github.com/edgarjs/alfred-github-repos/issues</string>
 	</dict>
 	<key>variables</key>
 	<dict>
+		<key>CACHE_TTL_SEC_ORG</key>
+		<string>86400</string>
+		<key>CACHE_TTL_SEC_PR</key>
+		<string>300</string>
+		<key>CACHE_TTL_SEC_REPO</key>
+		<string>86400</string>
 		<key>GITHUB_ACCESS_TOKEN</key>
 		<string></string>
-		<key>GITHUB_HOST</key>
+		<key>GITHUB_API_HOST</key>
 		<string>api.github.com</string>
+		<key>GITHUB_HOST</key>
+		<string>www.github.com</string>
+		<key>GITHUB_ME_ACCOUNT</key>
+		<string>@me</string>
+		<key>PR_ALL_INVOLVE_ME</key>
+		<string>true</string>
 	</dict>
 	<key>variablesdontexport</key>
 	<array>

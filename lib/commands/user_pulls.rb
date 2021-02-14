@@ -13,7 +13,7 @@ module Commands
     end
 
     def call(args)
-      results = filter_pulls(args[0])
+      results = filter_pulls(args.join(" "))
       serialize(results)
     end
 

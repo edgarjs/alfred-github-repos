@@ -16,14 +16,41 @@ module DataSource
       end
 
       def subject
-        @subject ||= Github.new(host: 'example.com', access_token: 'test_token')
+        @subject ||= Github.new(host: 'example.com', access_token: 'test_token',
+                                me_account: "@me", pr_all_involve_me: false)
+      end
+
+      def cache_ttl_sec_repo
+        (24 * 60 * 60)
+      end
+
+      def cache_ttl_sec_org
+        (24 * 60 * 60)
+      end
+
+      def cache_ttl_sec_pr
+        (5 * 60)
       end
 
       def subject_with_cache
         @subject_with_cache ||= Github.new(
           host: 'example.com',
           access_token: 'test_token',
-          cache_dir: 'tmp/cache'
+          cache_dir: 'tmp/cache',
+          me_account: "@me",
+          pr_all_involve_me: false,
+          cache_ttl_sec_repo: (24 * 60 * 60),
+          cache_ttl_sec_org: (24 * 60 * 60),
+          cache_ttl_sec_pr: (5 * 60)
+        )
+      end
+
+      def subject_with_pr_all_involve_me_true
+        @subject_with_cache ||= Github.new(
+          host: 'example.com',
+          access_token: 'test_token',
+          me_account: "@me",
+          pr_all_involve_me: true,
         )
       end
 
@@ -172,6 +199,21 @@ module DataSource
         assert_equal 1, actual.count
       end
 
+      def test_user_repos_multipage
+        expected = stub_user_repos_request(nil, {
+            headers: {
+                "Link" => '<https://example.com/?q=a&page=1>; rel="next", <https://example.com/?q=a&page=2>; rel="last"'
+            }
+        }).with(query: hash_including({"page"=>"1"}))
+        second_expected = stub_user_repos_request.with(query: hash_including({"page"=>"2"}))
+
+        actual = subject.user_repos
+        assert_requested expected
+        assert_requested second_expected
+
+        assert_equal 2, actual.count
+      end
+
       def test_user_repos_with_error_response
         stub_user_repos_request(nil, status: 403, body: response_error_json)
         assert_raises(StandardError, 'API rate limit exceeded') do
@@ -188,7 +230,7 @@ module DataSource
 
       def test_user_repos_returns_cache
         File.open('tmp/cache/user_repos', 'w') do |f|
-          f.write user_repos_json
+          f.write "[" + user_repos_json + "]"
         end
         actual = subject_with_cache.user_repos
         assert_equal 1, actual.count
@@ -196,7 +238,7 @@ module DataSource
       end
 
       def test_user_repos_skips_old_cache
-        expired = Time.now - Github::CACHE_TTL_SECS
+        expired = Time.now - cache_ttl_sec_repo
         File.open('tmp/cache/user_repos', 'w') do |f|
           f.write user_repos_json
         end
@@ -216,7 +258,7 @@ module DataSource
         actual = subject_with_cache.user_repos
         assert_equal 1, actual.count
         assert_requested expected
-        assert_equal user_repos_json, File.read('tmp/cache/user_repos')
+        assert_equal JSON.dump([JSON.parse(user_repos_json)]), File.read('tmp/cache/user_repos')
         File.delete('tmp/cache/user_repos')
       end
 
@@ -287,11 +329,67 @@ module DataSource
         assert_requested expected
       end
 
+      def test_all_involves_user_pulls_appends_is_pr_modifier
+        expected = stub_user_pulls_request(%r{/search/issues\?.*is:pr})
+        subject_with_pr_all_involve_me_true.user_pulls
+        assert_requested expected
+      end
+
+      def test_all_involves_user_pulls_appends_state_open_modifier
+        expected = stub_user_pulls_request(%r{/search/issues\?.*state:open})
+        subject_with_pr_all_involve_me_true.user_pulls
+        assert_requested expected
+      end
+
+      def test_all_involves_user_pulls_not_appends_user_me_modifier
+        stub_user_pulls_request
+        not_expected = stub_user_pulls_request(%r{/search/issues\?.*user:@me})
+        subject_with_pr_all_involve_me_true.user_pulls
+        assert_not_requested not_expected
+      end
+
+      def test_all_involves_user_pulls_appends_involves_me_modifier
+        expected = stub_user_pulls_request(%r{/search/issues\?.*involves:@me})
+        subject_with_pr_all_involve_me_true.user_pulls
+        assert_requested expected
+      end
+
+      def test_all_involves_user_pulls_no_org_request
+        orgs = stub_user_orgs_request
+        stub_user_pulls_request
+        subject_with_pr_all_involve_me_true.user_pulls
+        assert_not_requested orgs
+      end
+
+      def test_all_involves_user_pulls_not_appends_org_modifier
+        stub_user_pulls_request
+        not_expected = stub_user_pulls_request(%r{/search/issues\?.*org:acme})
+        subject_with_pr_all_involve_me_true.user_pulls
+        assert_not_requested not_expected
+      end
+
       def test_user_pulls_returns_items
         stub_user_orgs_request
         stub_user_pulls_request
         actual = subject.user_pulls
         assert_equal 1, actual.count
+      end
+
+      def test_user_pulls_multipage
+        stub_user_orgs_request
+
+        expected = stub_user_pulls_request(nil, {
+            headers: {
+                "Link" => '<https://example.com/?q=a&page=1>; rel="next", <https://example.com/?q=a&page=2>; rel="last"'
+            }
+        }).with(query: hash_including({"page"=>"1"}))
+        second_expected = stub_user_pulls_request.with(query: hash_including({"page"=>"2"}))
+
+        actual = subject.user_pulls
+        assert_requested expected
+        assert_requested second_expected
+
+        assert_equal 2, actual.count
       end
 
       def test_user_pulls_with_error_response
@@ -317,7 +415,7 @@ module DataSource
           f.write user_orgs_json
         end
         File.open('tmp/cache/user_pulls', 'w') do |f|
-          f.write search_pulls_json
+          f.write "[" + search_pulls_json + "]"
         end
         actual = subject_with_cache.user_pulls
         assert_equal 1, actual.count
@@ -326,16 +424,17 @@ module DataSource
       end
 
       def test_user_pulls_skips_old_cache_for_pulls_request
-        expired = Time.now - Github::CACHE_TTL_SECS
+        org_expired = Time.now - cache_ttl_sec_org
+        pr_expired = Time.now - cache_ttl_sec_pr
         File.open('tmp/cache/user_orgs', 'w') do |f|
           f.write user_orgs_json
         end
-        FileUtils.touch('tmp/cache/user_orgs', mtime: expired)
+        FileUtils.touch('tmp/cache/user_orgs', mtime: org_expired)
         File.open('tmp/cache/user_pulls', 'w') do |f|
           f.write search_pulls_json
         end
-        FileUtils.touch('tmp/cache/user_orgs', mtime: expired)
-        FileUtils.touch('tmp/cache/user_pulls', mtime: expired)
+        FileUtils.touch('tmp/cache/user_orgs', mtime: org_expired)
+        FileUtils.touch('tmp/cache/user_pulls', mtime: pr_expired)
         orgs_request = stub_user_orgs_request
         pulls_request = stub_user_pulls_request
         actual = subject_with_cache.user_pulls
@@ -347,16 +446,17 @@ module DataSource
       end
 
       def test_user_pulls_skips_old_cache_for_orgs_request
-        expired = Time.now - Github::CACHE_TTL_SECS
+        org_expired = Time.now - cache_ttl_sec_org
+        pr_expired = Time.now - cache_ttl_sec_pr
         File.open('tmp/cache/user_orgs', 'w') do |f|
           f.write user_orgs_json
         end
-        FileUtils.touch('tmp/cache/user_orgs', mtime: expired)
+        FileUtils.touch('tmp/cache/user_orgs', mtime: org_expired)
         File.open('tmp/cache/user_pulls', 'w') do |f|
           f.write search_pulls_json
         end
-        FileUtils.touch('tmp/cache/user_orgs', mtime: expired)
-        FileUtils.touch('tmp/cache/user_pulls', mtime: expired)
+        FileUtils.touch('tmp/cache/user_orgs', mtime: org_expired)
+        FileUtils.touch('tmp/cache/user_pulls', mtime: pr_expired)
         orgs_request = stub_user_orgs_request
         pulls_request = stub_user_pulls_request
         actual = subject_with_cache.user_pulls
@@ -380,7 +480,7 @@ module DataSource
         assert_equal 1, actual.count
         assert_requested orgs_request
         assert_requested pulls_request
-        assert_equal search_pulls_json, File.read('tmp/cache/user_pulls')
+        assert_equal JSON.dump([JSON.parse(search_pulls_json)]), File.read('tmp/cache/user_pulls')
         File.delete('tmp/cache/user_orgs')
         File.delete('tmp/cache/user_pulls')
       end

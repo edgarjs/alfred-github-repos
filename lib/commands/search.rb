@@ -13,7 +13,7 @@ module Commands
     end
 
     def call(args)
-      results = search(args[0])
+      results = search(args.join(" "))
       serialize(results)
     end
 

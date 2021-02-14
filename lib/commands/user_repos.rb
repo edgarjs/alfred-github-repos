@@ -13,7 +13,7 @@ module Commands
     end
 
     def call(args)
-      results = filter_repos(args[0])
+      results = filter_repos(args.join(" "))
       serialize(results)
     end
 
