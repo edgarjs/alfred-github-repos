@@ -47,7 +47,10 @@ class App
     end
 
     def user_pulls
-      Commands::UserPulls.new(pull_requests: pull_requests)
+      Commands::UserPulls.new(
+        pull_requests: pull_requests,
+        web_host: ENV['GITHUB_HOST']
+      )
     end
 
     private

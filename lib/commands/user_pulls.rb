@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'ostruct'
 
 module Commands
   class UserPulls
@@ -8,12 +9,14 @@ module Commands
       'Usage: cli user-pulls [query]'
     end
 
-    def initialize(pull_requests:)
+    def initialize(pull_requests:, web_host:)
       @pull_requests = pull_requests
+      @web_host = web_host
     end
 
     def call(args)
-      results = filter_pulls(args.join(" "))
+      results = filter_pulls(args.join(' '))
+      results.unshift(open_pulls_page_item) if args.empty?
       serialize(results)
     end
 
@@ -35,8 +38,22 @@ module Commands
       pull_requests.user_pulls
     end
 
-    def serialize(results)
-      JSON.generate(items: results.map(&:as_alfred_item))
+    def serialize(items)
+      JSON.generate(items: items.map(&:as_alfred_item))
+    end
+
+    def open_pulls_page_item
+      url = "https://#{@web_host}/pulls"
+      OpenStruct.new(
+        as_alfred_item: {
+          title: 'Open your Pull Requests page...',
+          subtitle: url,
+          arg: url,
+          text: {
+            copy: url
+          }
+        }
+      )
     end
   end
 end
