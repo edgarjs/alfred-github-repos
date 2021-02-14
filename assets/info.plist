@@ -879,7 +879,7 @@ https://github.com/edgarjs/alfred-github-repos/issues</string>
 		<string>GITHUB_ACCESS_TOKEN</string>
 	</array>
 	<key>version</key>
-	<string>3.1.0</string>
+	<string>3.1.1</string>
 	<key>webaddress</key>
 	<string>https://github.com/edgarjs/alfred-github-repos</string>
 </dict>
