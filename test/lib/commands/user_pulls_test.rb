@@ -49,6 +49,16 @@ module Commands
       assert_equal expected, actual
     end
 
+    def test_fuzzy_filters_ignores_case
+      pull1 = Entities::PullRequest.new(title: 'Foo bar-baz')
+      pull2 = Entities::PullRequest.new(title: 'FOO-Bar')
+      pull3 = Entities::PullRequest.new(title: 'foo-bar')
+      pull_requests.expects(:user_pulls).returns([pull1, pull2, pull3])
+      actual = subject.call(%w[fob])
+      expected = serialize_items([pull1, pull2, pull3])
+      assert_equal expected, actual
+    end
+
     def test_inserts_open_pulls_page_when_no_args
       pull_requests.expects(:user_pulls).returns([pull_entity])
       actual = subject.call([])

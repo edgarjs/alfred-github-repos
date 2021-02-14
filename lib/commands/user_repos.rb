@@ -25,7 +25,7 @@ module Commands
       query = query.to_s.strip
       return user_repos if query.empty?
 
-      filter = Regexp.new(query.split('').join('.*'))
+      filter = Regexp.new(query.split('').join('.*'), Regexp::IGNORECASE)
       user_repos.select { |repo| filter =~ repo.full_name }
     end
 

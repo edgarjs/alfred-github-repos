@@ -28,7 +28,7 @@ module Commands
       query = query.to_s.strip
       return user_pulls if query.empty?
 
-      filter = Regexp.new(query.split('').join('.*'))
+      filter = Regexp.new(query.split('').join('.*'), Regexp::IGNORECASE)
       user_pulls.select do |pull|
         filter =~ pull.title || filter =~ pull.html_url
       end
