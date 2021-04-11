@@ -1,10 +1,10 @@
-# Github Repos workflow for Alfred
+# GitHub Repos workflow for Alfred
 
-This is a custom workflow for the [Alfred app][alfred-app] that lets you search and open a Github repository via the Github Search API.
+This is a custom workflow for the [Alfred app][alfred-app] that lets you search and open a GitHub repository via the GitHub Search API.
 
 ## Authentication
 
-You'll need to authenticate with a personal access token that you can generate in the [Github developer settings page][personal-access-token] or by running the `gh-token` command in Alfred.
+You'll need to authenticate with a personal access token that you can generate in the [GitHub developer settings page][personal-access-token] or by running the `gh-token` command in Alfred.
 
 After you have copied your personal access token, run `gh-login <your-token>` to set your personal access token.
 
@@ -16,7 +16,7 @@ Here's the list of available commands.
 
 ![gh hello-world](docs/gh-hello-world.png)
 
-The example above will search for repositories with the string "hello-world" in their name. Internally this uses the [Github Search syntax][github-search], so you can use modifiers like:
+The example above will search for repositories with the string "hello-world" in their name. Internally this uses the [GitHub Search syntax][github-search], so you can use modifiers like:
 
 ![gh hello-world stars:>1000](docs/gh-hello-world-stars-1000.png)
 
@@ -38,7 +38,7 @@ If you want to limit the search to be under your organisations, please remove `P
 
 ### Open notifications: `gh-notifications`
 
-This command just opens your [Github notification][notifications-page] page.
+This command just opens your [GitHub notification][notifications-page] page.
 
 ## Config Cache TTL
 
