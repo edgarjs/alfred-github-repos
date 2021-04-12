@@ -175,11 +175,11 @@
 	<key>createdby</key>
 	<string>edgarjs</string>
 	<key>description</key>
-	<string>Easily open any Github repository</string>
+	<string>Easily open any GitHub repository</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
-	<string>Github Repos</string>
+	<string>GitHub Repos</string>
 	<key>objects</key>
 	<array>
 		<dict>
@@ -213,7 +213,7 @@
 				<key>subtext</key>
 				<string>https://github.com/notifications</string>
 				<key>text</key>
-				<string>Open your Github notifications page</string>
+				<string>Open your GitHub notifications page</string>
 				<key>withspace</key>
 				<false/>
 			</dict>
@@ -283,7 +283,7 @@ fi</string>
 				<key>subtext</key>
 				<string>For example: Hello-World</string>
 				<key>title</key>
-				<string>Search for a repository in your Github account</string>
+				<string>Search for a repository in your GitHub account</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -406,7 +406,7 @@ fi</string>
 				<key>subtext</key>
 				<string>Use `gh` or `repo` to search for repositories</string>
 				<key>title</key>
-				<string>Search for a pull request in your Github account</string>
+				<string>Search for a pull request in your GitHub account</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -514,7 +514,7 @@ fi</string>
 				<key>subtext</key>
 				<string>Use `repo` instead of `gh` to only search within your own repos</string>
 				<key>title</key>
-				<string>Search for a repository in Github</string>
+				<string>Search for a repository in GitHub</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -611,7 +611,7 @@ end run</string>
 				<key>text</key>
 				<string>Host set to "{query}"</string>
 				<key>title</key>
-				<string>Github host saved!</string>
+				<string>GitHub host saved!</string>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.output.notification</string>
@@ -673,13 +673,13 @@ end run</string>
 		</dict>
 	</array>
 	<key>readme</key>
-	<string># Github Repos workflow for Alfred
+	<string># GitHub Repos workflow for Alfred
 
-This is a custom workflow for the Alfred app that lets you search and open a Github repository via the Github Search API.
+This is a custom workflow for the Alfred app that lets you search and open a GitHub repository via the GitHub Search API.
 
 ## Authentication
 
-You'll need to authenticate with a personal access token that you can generate in the Github developer settings page or by running `gh-token` in Alred.
+You'll need to authenticate with a personal access token that you can generate in the GitHub developer settings page or by running `gh-token` in Alred.
 
 After you have copied your personal access token, open this dialog again and replace the value of the variable with your token.
 
@@ -691,7 +691,7 @@ Here's the list of available commands.
 ### Global Search: `gh &lt;query&gt;`
 
 
-The example above will search for repositories with the string "hello-world" in their name. Internally this uses the Github Search syntax, so you can use modifiers like:
+The example above will search for repositories with the string "hello-world" in their name. Internally this uses the GitHub Search syntax, so you can use modifiers like:
 
   gh hello-world stars:&gt;100
 
@@ -712,7 +712,7 @@ This command searches within the Pull Requests that you're involved in.
 
 ### Open notifications: `gh-notifications`
 
-This command just opens your Github notification page.
+This command just opens your GitHub notification page.
 
 
 ## Configuring host for Enterprise
