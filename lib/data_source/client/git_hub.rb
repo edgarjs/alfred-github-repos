@@ -6,7 +6,7 @@ require 'fileutils'
 
 module DataSource
   module Client
-    class Github
+    class GitHub
 
       def initialize(config)
         @config = {

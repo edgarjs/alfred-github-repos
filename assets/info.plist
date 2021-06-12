@@ -355,7 +355,7 @@ fi</string>
 				<key>spaces</key>
 				<string></string>
 				<key>url</key>
-				<string>https://{var:GITHUB_HOST}/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
+				<string>https://{var:GITHUB_HOST}/settings/tokens/new?description=GitHub%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
 				<key>utf8</key>
 				<false/>
 			</dict>
@@ -448,7 +448,7 @@ fi</string>
 				<key>spaces</key>
 				<string></string>
 				<key>url</key>
-				<string>https://{var:GITHUB_HOST}/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
+				<string>https://{var:GITHUB_HOST}/settings/tokens/new?description=GitHub%20Repos%20Alfred%20workflow&amp;scopes=repo</string>
 				<key>utf8</key>
 				<false/>
 			</dict>

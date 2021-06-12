@@ -7,7 +7,7 @@ require 'version'
 module Commands
   class HelpTest < Minitest::Test
     HEAD = <<~HEAD
-      Github Repos workflow for Alfred - CLI
+      GitHub Repos workflow for Alfred - CLI
       Version: #{App::VERSION}
     HEAD
 

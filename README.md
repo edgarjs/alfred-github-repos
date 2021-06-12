@@ -84,7 +84,7 @@ This project is published under the [MIT License](LICENSE.md).
 [github-search]: https://docs.github.com/en/free-pro-team@latest/github/searching-for-information-on-github/searching-on-github
 [download-packal]: https://www.packal.org/workflow/github-repos
 [download-releases]: https://github.com/edgarjs/alfred-github-repos/releases
-[personal-access-token]: https://github.com/settings/tokens/new?description=Github%20Repos%20Alfred%20workflow&scopes=repo
+[personal-access-token]: https://github.com/settings/tokens/new?description=GitHub%20Repos%20Alfred%20workflow&scopes=repo
 [pulls-page]: https://github.com/pulls
 [notifications-page]: https://github.com/notifications
 [alfred-env-vars]: https://www.alfredapp.com/help/workflows/script-environment-variables/

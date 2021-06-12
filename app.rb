@@ -3,7 +3,7 @@
 $stdout.sync = true
 $LOAD_PATH.unshift File.expand_path('lib')
 
-require 'data_source/client/github'
+require 'data_source/client/git_hub'
 require 'data_source/pull_requests'
 require 'data_source/repositories'
 require 'commands/help'
@@ -14,7 +14,7 @@ require 'commands/user_pulls'
 class App
   class << self
     def client
-      DataSource::Client::Github.new(
+      DataSource::Client::GitHub.new(
         host: ENV['GITHUB_API_HOST'],
         access_token: ENV['GITHUB_ACCESS_TOKEN'],
         me_account: ENV['GITHUB_ME_ACCOUNT'],

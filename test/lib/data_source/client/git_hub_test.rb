@@ -2,11 +2,11 @@
 
 require 'test_helper'
 require 'fileutils'
-require 'data_source/client/github'
+require 'data_source/client/git_hub'
 
 module DataSource
   module Client
-    class GithubTest < Minitest::Test
+    class GitHubTest < Minitest::Test
       def setup
         super
         FileUtils.mkdir_p('tmp/cache')
@@ -16,7 +16,7 @@ module DataSource
       end
 
       def subject
-        @subject ||= Github.new(host: 'example.com', access_token: 'test_token',
+        @subject ||= GitHub.new(host: 'example.com', access_token: 'test_token',
                                 me_account: "@me", pr_all_involve_me: false)
       end
 
@@ -33,7 +33,7 @@ module DataSource
       end
 
       def subject_with_cache
-        @subject_with_cache ||= Github.new(
+        @subject_with_cache ||= GitHub.new(
           host: 'example.com',
           access_token: 'test_token',
           cache_dir: 'tmp/cache',
@@ -46,7 +46,7 @@ module DataSource
       end
 
       def subject_with_pr_all_involve_me_true
-        @subject_with_cache ||= Github.new(
+        @subject_with_cache ||= GitHub.new(
           host: 'example.com',
           access_token: 'test_token',
           me_account: "@me",
