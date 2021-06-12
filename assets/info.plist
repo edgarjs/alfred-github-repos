@@ -588,7 +588,7 @@ end run</string>
 				<key>subtext</key>
 				<string>Type `gh-token` to generate a new token</string>
 				<key>text</key>
-				<string>Paste your personall access token</string>
+				<string>Paste your personal access token</string>
 				<key>withspace</key>
 				<true/>
 			</dict>
