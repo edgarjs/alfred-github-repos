@@ -27,6 +27,7 @@ GEM
       pry (~> 0.13.0)
     public_suffix (4.0.6)
     rake (13.0.1)
+    rexml (3.2.5)
     ruby-progressbar (1.10.1)
     simplecov (0.19.1)
       docile (~> 1.1)
@@ -47,6 +48,7 @@ DEPENDENCIES
   mocha (~> 1.11)
   pry-byebug
   rake (~> 13.0)
+  rexml (~> 3.2, >= 3.2.4)
   simplecov (~> 0.19)
   webmock (~> 3.10)
 

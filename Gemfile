@@ -9,6 +9,7 @@ group :development do
 end
 
 group :test do
+  gem 'rexml', '~> 3.2', '>= 3.2.4'
   gem 'minitest', '~> 5.14', require: 'minitest/autorun'
   gem 'minitest-reporters', '~> 1.4'
   gem 'mocha', '~> 1.11', require: 'mocha/minitest'

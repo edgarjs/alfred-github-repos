@@ -63,7 +63,7 @@ If you're using an Enterprise account, you can call the `gh-host <host>` command
 You can submit your bug reports or feature requests at:
 https://github.com/edgarjs/alfred-github-repos/issues
 
-If you want to submit a Pull Request, please follow these simple guides:
+If you want to submit a Pull Request, please read [CONTRIBUTING](./docs/CONTRIBUTING.md) then follow these simple guides:
 
 1. Add a detailed description of what you're changing and why.
 2. Add necessary unit tests that cover your changes.
